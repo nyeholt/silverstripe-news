@@ -34,6 +34,8 @@ class NewsHolder extends Page
 												// news section (some are secondary and merely categorisation tools)
 	);
 
+	public static $defaults = array('AutoFiling' => true, 'PrimaryNewsSection' => true);
+
 	public static $icon = 'news/images/newsholder';
 
 	/**
@@ -81,9 +83,9 @@ class NewsHolder extends Page
 		$articles = null;
 		if ($subholders && $subholders->Count()) {
 			$ids = $subholders->column('ID');
-			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID IN' => $ids)), 'PublishedDate DESC', '', $start.','.$number);
+			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID IN' => $ids)), 'OriginalPublishedDate DESC', '', $start.','.$number);
 		} else {
-			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID = ' => $this->ID)), 'PublishedDate DESC', '', $start.','.$number);
+			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
 		}
 
 		return $articles;
@@ -136,15 +138,17 @@ class NewsHolder extends Page
 		$month = date('M', strtotime($article->Created));
 		$day = date('d', strtotime($article->Created));
 
-		$yearFolder = $this->childByName($year, get_class($this));
+		$yearFolder = $this->dateFolder($year);
 		if (!$yearFolder) {
 			throw new Exception("Failed retrieving folder");
 		}
-		$monthFolder = $yearFolder->childByName($month, get_class($this));
+
+		$monthFolder = $yearFolder->dateFolder($month);
 		if (!$monthFolder) {
 			throw new Exception("Failed retrieving folder");
 		}
-		$dayFolder = $monthFolder->childByName($day, get_class($this));
+
+		$dayFolder = $monthFolder->dateFolder($day);
 		if (!$dayFolder) {
 			throw new Exception("Failed retrieving folder");
 		}
@@ -159,15 +163,17 @@ class NewsHolder extends Page
 	 * @param String $name
 	 * @param String $type
 	 */
-	public function childByName($name, $type='Page', $publish=false)
+	public function dateFolder($name, $publish=false)
 	{
 		// see if we have a named child, otherwise create one
-		$child = DataObject::get_one('ArticleHolder', 'ParentID = '.$this->ID.' AND Title = \''.Convert::raw2sql($name).'\'');
+		$child = DataObject::get_one('NewsHolder', 'ParentID = '.$this->ID.' AND Title = \''.Convert::raw2sql($name).'\'');
+
 		if (!$child || !$child->ID) {
-			// create a new one
-			$child = new $type;
+			$child = new NewsHolder();
 			$child->Title = $name;
 			$child->ParentID = $this->ID;
+			$child->AutoFiling = false;
+			$child->PrimaryNewsSection = false;
 			$child->write();
 			if ($publish) {
 				$child->doPublish();
