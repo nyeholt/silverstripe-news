@@ -27,7 +27,22 @@ OF SUCH DAMAGE.
  */
 class NewsHolder extends Page
 {
-    public static $icon = 'news/images/newsholder';
+	public static $db = array(
+		'AutoFiling' => 'Boolean',	// whether articles created in this holder
+									// automatically file into subfolders
+		'PrimaryNewsSection' => 'Boolean',	// whether this holder should be regarded as a primary
+												// news section (some are secondary and merely categorisation tools)
+	);
+
+	public static $icon = 'news/images/newsholder';
+
+	/**
+	 * Should this news article be automatically filed into a year/month/date
+	 * folder on creation.
+	 *
+	 * @var boolean
+	 */
+	public static $automatic_filing = true;
 
 	/**
 	 * A bit of a cheat way of letting the template determine how many articles to display.
@@ -39,6 +54,13 @@ class NewsHolder extends Page
 	 */
 	protected $numberToDisplay = 10;
 
+	public function getCMSFields()
+	{
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true));
+		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true));
+		return $fields;
+	}
 
 	/**
 	 * Returns a list of articles within this news holder.
@@ -85,13 +107,77 @@ class NewsHolder extends Page
 	 */
 	public function SubSections()
 	{
-		$subholders = DataObject::get('NewsHolder', db_quote(array('ParentID =' => $this->ID)));
-		return $subholders;
+		$subs = null;
+
+		$childHolders = DataObject::get('NewsHolder', db_quote(array('ParentID =' => $this->ID)));
+		if ($childHolders && $childHolders->Count()) {
+			$subs = new DataObjectSet();
+			foreach ($childHolders as $holder) {
+				$subs->push($holder);
+				// see if there's any children to include
+				$subSub = $holder->SubSections();
+				if ($subSub) {
+					$subs->merge($subSub);
+				}
+			}
+		}
+
+		return $subs;
+	}
+
+	/**
+	 * Gets an appropriate sub article holder for the given article page
+	 *
+	 * @param Page $article
+	 */
+	public function getPartitionedHolderForArticle($article)
+	{
+		$year = date('Y', strtotime($article->Created));
+		$month = date('M', strtotime($article->Created));
+		$day = date('d', strtotime($article->Created));
+
+		$yearFolder = $this->childByName($year, get_class($this));
+		if (!$yearFolder) {
+			throw new Exception("Failed retrieving folder");
+		}
+		$monthFolder = $yearFolder->childByName($month, get_class($this));
+		if (!$monthFolder) {
+			throw new Exception("Failed retrieving folder");
+		}
+		$dayFolder = $monthFolder->childByName($day, get_class($this));
+		if (!$dayFolder) {
+			throw new Exception("Failed retrieving folder");
+		}
+
+		return $dayFolder;
+	}
+
+	/**
+	 *
+	 * Finds or creates a new child object based on a given name
+	 *
+	 * @param String $name
+	 * @param String $type
+	 */
+	public function childByName($name, $type='Page', $publish=false)
+	{
+		// see if we have a named child, otherwise create one
+		$child = DataObject::get_one('ArticleHolder', 'ParentID = '.$this->ID.' AND Title = \''.Convert::raw2sql($name).'\'');
+		if (!$child || !$child->ID) {
+			// create a new one
+			$child = new $type;
+			$child->Title = $name;
+			$child->ParentID = $this->ID;
+			$child->write();
+			if ($publish) {
+				$child->doPublish();
+			}
+		}
+		return $child;
 	}
 }
 
 class NewsHolder_Controller extends Page_Controller
 {
-
 }
 ?>

@@ -32,13 +32,13 @@ class NewsArticle extends Page
 	public static $db = array(
 		'Summary' => 'HTMLText',
 		'Author' => 'Varchar(128)',
-		'PublishedDate' => 'Date',
+		'OriginalPublishedDate' => 'Date',
 		'ExternalURL' => 'Varchar(255)',
 		'Source' => 'Varchar(128)',
 	);
 
 	/**
-	 * The InternalFile is used when the news article is mostly contained in another item -
+	 * The InternalFile is used when the news article is mostly contained in a file based item -
 	 * if this is set, then the URL to the item is returned in the call to "Link" for this asset. 
 	 *
 	 * @var array
@@ -52,32 +52,71 @@ class NewsArticle extends Page
 		$fields = parent::getCMSFields();
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new CalendarDateField('PublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new CalendarDateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
-		if (!$this->PublishedDate) {
+		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
-			$this->PublishedDate = date('Y-m-d');
+			$this->OriginalPublishedDate = date('Y-m-d');
 		}
 
 		// $fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalPageLinkID', _t('NewsArticle.INTERNAL_PAGE', 'A page on this site for the news')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
-
 		$fields->addFieldToTab('Root.Content.Main', new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
-
 		return $fields;
 	}
 
+	/**
+	 * When the article is saved, and this article's section dictates that it
+	 * needs to be filed, then do so
+	 */
 	public function onBeforeWrite()
 	{
 		parent::onBeforeWrite();
-
-		if (!$this->PublishedDate) {
+		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
-			$this->PublishedDate = date('Y-m-d 12:00:00');
+			$this->OriginalPublishedDate = date('Y-m-d 12:00:00');
+		}
+
+		$parent = $this->Parent();
+		$section = $this->Section();
+		if ($section->ID == $parent->ID && $section->AutoFiling) {
+			if (!$this->Created) {
+				$this->Created = date('Y-m-d H:i:s');
+			}
+			$pp = $this->PartitionParent();
+			$this->ParentID = $pp->ID;
 		}
 	}
+
+	/**
+	 * Get the top level parent of this article that is marked as a section
+	 *
+	 *  @return NewsHolder
+	 */
+	public function Section()
+	{
+		$page = $this;
+		while($page) {
+			if ($page->ParentID == 0 || $page->PrimaryNewsSection) {
+				return $page;
+			}
+			$page = $page->Parent();
+		}
+	}
+
+	/**
+	 * Gets the parent for this article page based on its section, and its
+	 * creation date
+	 */
+	public function PartitionParent()
+	{
+		$section = $this->Section();
+		$holder = $section->getPartitionedHolderForArticle($this);
+		return $holder;
+	}
+
 
 	/**
 	 * Link to the news article. If it has an external URL set, or a file, link to that instead. 
@@ -91,18 +130,15 @@ class NewsArticle extends Page
 			// redirect away
 			return $this->ExternalURL;
 		}
-
 		if ($this->InternalFile()->ID) {
 			$file = $this->InternalFile();
 			return $file->Link($action);
 		}
-
 		return parent::Link($action);
 	}
 }
 
 class NewsArticle_Controller extends Page_Controller
 {
-
 }
 ?>
