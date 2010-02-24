@@ -1,0 +1,108 @@
+<?php
+/*
+
+Copyright (c) 2009, SilverStripe Australia PTY LTD - www.silverstripe.com.au
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of SilverStripe nor the names of its contributors may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGE.
+*/
+
+/**
+ *
+ *
+ * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ */
+class NewsArticle extends Page
+{
+    public static $icon = 'news/images/newspaper';
+
+	public static $db = array(
+		'Summary' => 'HTMLText',
+		'Author' => 'Varchar(128)',
+		'PublishedDate' => 'Date',
+		'ExternalURL' => 'Varchar(255)',
+		'Source' => 'Varchar(128)',
+	);
+
+	/**
+	 * The InternalFile is used when the news article is mostly contained in another item -
+	 * if this is set, then the URL to the item is returned in the call to "Link" for this asset. 
+	 *
+	 * @var array
+	 */
+	public static $has_one = array(
+		'InternalFile' => 'File',
+	);
+
+	public function getCMSFields()
+	{
+		$fields = parent::getCMSFields();
+
+		$fields->addFieldToTab('Root.Content.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new CalendarDateField('PublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
+
+		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
+		if (!$this->PublishedDate) {
+			// @TODO Fix this to be correctly localized!!
+			$this->PublishedDate = date('Y-m-d');
+		}
+
+		// $fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalPageLinkID', _t('NewsArticle.INTERNAL_PAGE', 'A page on this site for the news')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
+
+		$fields->addFieldToTab('Root.Content.Main', new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
+
+		return $fields;
+	}
+
+	public function onBeforeWrite()
+	{
+		parent::onBeforeWrite();
+
+		if (!$this->PublishedDate) {
+			// @TODO Fix this to be correctly localized!!
+			$this->PublishedDate = date('Y-m-d 12:00:00');
+		}
+	}
+
+	/**
+	 * Link to the news article. If it has an external URL set, or a file, link to that instead. 
+	 *
+	 * @param String $action
+	 * @return String
+	 */
+	public function Link($action='')
+	{
+		if (strlen($this->ExternalURL) && !strlen($this->Content)) {
+			// redirect away
+			return $this->ExternalURL;
+		}
+
+		if ($this->InternalFile()->ID) {
+			$file = $this->InternalFile();
+			return $file->Link($action);
+		}
+
+		return parent::Link($action);
+	}
+}
+
+class NewsArticle_Controller extends Page_Controller
+{
+
+}
+?>
