@@ -79,7 +79,13 @@ class NewsHolder extends Page
 
 		$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
-		$subholders = DataObject::get('NewsHolder', db_quote(array('ParentID =' => $this->ID)));
+		$subholders = $this->SubSections();
+		if ($subholders) {
+			$subholders->push($this);
+		} else {
+			$subholders = new DataObjectSet(array($this));
+		}
+
 		$articles = null;
 		if ($subholders && $subholders->Count()) {
 			$ids = $subholders->column('ID');
