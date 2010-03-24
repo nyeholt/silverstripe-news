@@ -21,7 +21,7 @@ OF SUCH DAMAGE.
 */
 
 /**
- * 
+ * A top level page that contains news articles
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
@@ -34,7 +34,7 @@ class NewsHolder extends Page
 												// news section (some are secondary and merely categorisation tools)
 	);
 
-	public static $defaults = array('AutoFiling' => true, 'PrimaryNewsSection' => true);
+	public static $defaults = array('AutoFiling' => false, 'PrimaryNewsSection' => true);
 
 	public static $icon = 'news/images/newsholder';
 
@@ -56,6 +56,11 @@ class NewsHolder extends Page
 	 */
 	protected $numberToDisplay = 10;
 
+	/**
+	 * Gets the fields to display for this news holder in the CMS
+	 *
+	 * @return FieldSet
+	 */
 	public function getCMSFields()
 	{
 		$fields = parent::getCMSFields();
@@ -98,22 +103,11 @@ class NewsHolder extends Page
 	}
 
 	/**
-	 *
-	 * Set the number of articles to be displayed in a listing
-	 * 
-	 * @param int $num
-	 */
-	public function SetArticleNumber($num)
-	{
-		$this->numberToDisplay = $num;
-	}
-
-	/**
 	 * Returns a list of sub news sections, if available
 	 *
 	 * @return DataObjectSet
 	 */
-	public function SubSections()
+	public function SubSections($allChildren=true)
 	{
 		$subs = null;
 
@@ -122,10 +116,12 @@ class NewsHolder extends Page
 			$subs = new DataObjectSet();
 			foreach ($childHolders as $holder) {
 				$subs->push($holder);
-				// see if there's any children to include
-				$subSub = $holder->SubSections();
-				if ($subSub) {
-					$subs->merge($subSub);
+				if ($allChildren === true) {
+					// see if there's any children to include
+					$subSub = $holder->SubSections();
+					if ($subSub) {
+						$subs->merge($subSub);
+					}
 				}
 			}
 		}
