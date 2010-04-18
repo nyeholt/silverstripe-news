@@ -38,6 +38,11 @@ class NewsHolder extends Page
 
 	public static $icon = 'news/images/newsholder';
 
+	public static $allowed_children = array(
+        'NewsArticle'
+    );
+
+
 	/**
 	 * Should this news article be automatically filed into a year/month/date
 	 * folder on creation.
@@ -84,19 +89,24 @@ class NewsHolder extends Page
 
 		$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
-		$subholders = $this->SubSections();
-		if ($subholders) {
-			$subholders->push($this);
-		} else {
-			$subholders = new DataObjectSet(array($this));
-		}
-
 		$articles = null;
-		if ($subholders && $subholders->Count()) {
-			$ids = $subholders->column('ID');
-			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID IN' => $ids)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+		if ($this->PrimaryNewsSection) {
+			// get all where the holder = me
+			$articles = DataObject::get('NewsArticle', db_quote(array('NewsSectionID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
 		} else {
-			$articles = DataObject::get('NewsArticle', db_quote(array('ParentID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+			$subholders = $this->SubSections();
+			if ($subholders) {
+				$subholders->push($this);
+			} else {
+				$subholders = new DataObjectSet(array($this));
+			}
+			
+			if ($subholders && $subholders->Count()) {
+				$ids = $subholders->column('ID');
+				$articles = DataObject::get('NewsArticle', db_quote(array('ParentID IN' => $ids)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+			} else {
+				$articles = DataObject::get('NewsArticle', db_quote(array('ParentID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+			}
 		}
 
 		return $articles;

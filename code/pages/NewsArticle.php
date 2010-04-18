@@ -45,6 +45,7 @@ class NewsArticle extends Page
 	 */
 	public static $has_one = array(
 		'InternalFile' => 'File',
+		'NewsSection' => 'NewsHolder',
 	);
 
 	public function getCMSFields()
@@ -80,7 +81,14 @@ class NewsArticle extends Page
 		}
 
 		$parent = $this->Parent();
-		$section = $this->Section();
+
+		// just in case we've been moved, update our section
+		$section = $this->findSection();
+		if (!$this->NewsSection) {
+			$this->NewsSection = $section;
+		}
+		$this->NewsSectionID = $section->ID;
+		
 		if ($section->ID == $parent->ID && $section->AutoFiling) {
 			if (!$this->Created) {
 				$this->Created = date('Y-m-d H:i:s');
@@ -97,6 +105,18 @@ class NewsArticle extends Page
 	 */
 	public function Section()
 	{
+		if ($this->NewsSectionID) {
+			return $this->NewsSection;
+		}
+
+		$section = $this->findSection();
+		return $section;
+	}
+
+	/**
+	 * Find the section this news article is currently in, based on ancestor pages
+	 */
+	public function findSection() {
 		$page = $this;
 		while($page) {
 			if ($page->ParentID == 0 || $page->PrimaryNewsSection) {
@@ -116,7 +136,6 @@ class NewsArticle extends Page
 		$holder = $section->getPartitionedHolderForArticle($this);
 		return $holder;
 	}
-
 
 	/**
 	 * Link to the news article. If it has an external URL set, or a file, link to that instead. 
