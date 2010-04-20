@@ -90,9 +90,10 @@ class NewsHolder extends Page
 		$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
 
 		$articles = null;
+		$filter = null;
 		if ($this->PrimaryNewsSection) {
 			// get all where the holder = me
-			$articles = DataObject::get('NewsArticle', db_quote(array('NewsSectionID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+			$filter = db_quote(array('NewsSectionID = ' => (int) $this->ID));
 		} else {
 			$subholders = $this->SubSections();
 			if ($subholders) {
@@ -103,11 +104,14 @@ class NewsHolder extends Page
 			
 			if ($subholders && $subholders->Count()) {
 				$ids = $subholders->column('ID');
-				$articles = DataObject::get('NewsArticle', db_quote(array('ParentID IN' => $ids)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+				$filter = db_quote(array('ParentID IN' => $ids));
+				
 			} else {
-				$articles = DataObject::get('NewsArticle', db_quote(array('ParentID = ' => $this->ID)), 'OriginalPublishedDate DESC', '', $start.','.$number);
+				$filter = db_quote(array('ParentID = ' =>  (int) $this->ID));
 			}
 		}
+
+		$articles = DataObject::get('NewsArticle', $filter, 'OriginalPublishedDate DESC', '', $start.','.$number);
 
 		return $articles;
 	}

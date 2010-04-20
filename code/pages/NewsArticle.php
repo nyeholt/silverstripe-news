@@ -84,9 +84,6 @@ class NewsArticle extends Page
 
 		// just in case we've been moved, update our section
 		$section = $this->findSection();
-		if (!$this->NewsSection) {
-			$this->NewsSection = $section;
-		}
 		$this->NewsSectionID = $section->ID;
 		
 		if ($section->ID == $parent->ID && $section->AutoFiling) {
@@ -106,7 +103,7 @@ class NewsArticle extends Page
 	public function Section()
 	{
 		if ($this->NewsSectionID) {
-			return $this->NewsSection;
+			return $this->NewsSection();
 		}
 
 		$section = $this->findSection();
@@ -132,7 +129,7 @@ class NewsArticle extends Page
 	 */
 	public function PartitionParent()
 	{
-		$section = $this->Section();
+		$section = $this->findSection();
 		$holder = $section->getPartitionedHolderForArticle($this);
 		return $holder;
 	}
