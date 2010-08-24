@@ -93,7 +93,7 @@ class NewsHolder extends Page
 		$filter = null;
 		if ($this->PrimaryNewsSection) {
 			// get all where the holder = me
-			$filter = db_quote(array('NewsSectionID = ' => (int) $this->ID));
+			$filter = singleton('NewsUtils')->dbQuote(array('NewsSectionID = ' => (int) $this->ID));
 		} else {
 			$subholders = $this->SubSections();
 			if ($subholders) {
@@ -104,10 +104,10 @@ class NewsHolder extends Page
 			
 			if ($subholders && $subholders->Count()) {
 				$ids = $subholders->column('ID');
-				$filter = db_quote(array('ParentID IN' => $ids));
+				$filter = singleton('NewsUtils')->dbQuote(array('ParentID IN' => $ids));
 				
 			} else {
-				$filter = db_quote(array('ParentID = ' =>  (int) $this->ID));
+				$filter = singleton('NewsUtils')->dbQuote(array('ParentID = ' =>  (int) $this->ID));
 			}
 		}
 
@@ -125,7 +125,7 @@ class NewsHolder extends Page
 	{
 		$subs = null;
 
-		$childHolders = DataObject::get('NewsHolder', db_quote(array('ParentID =' => $this->ID)));
+		$childHolders = DataObject::get('NewsHolder', singleton('NewsUtils')->dbQuote(array('ParentID =' => $this->ID)));
 		if ($childHolders && $childHolders->Count()) {
 			$subs = new DataObjectSet();
 			foreach ($childHolders as $holder) {
