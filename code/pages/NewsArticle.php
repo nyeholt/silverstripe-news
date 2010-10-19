@@ -21,7 +21,7 @@ OF SUCH DAMAGE.
 */
 
 /**
- *
+ * A news article in the system
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  */
@@ -96,6 +96,20 @@ class NewsArticle extends Page
 	}
 
 	/**
+	 * Make sure all parents are published when publishing a news article
+	 */
+	public function onAfterPublish() {
+		// go through all parents that are news holders and publish them if they haven't been
+		$parent = $this->Parent();
+		while ($parent && $parent instanceof NewsHolder) {
+			if ($parent->Status != 'Published') {
+				$parent->doPublish();
+			}
+			$parent = $parent->Parent();
+		}
+	}
+
+	/**
 	 * Get the top level parent of this article that is marked as a section
 	 *
 	 *  @return NewsHolder
@@ -157,4 +171,3 @@ class NewsArticle extends Page
 class NewsArticle_Controller extends Page_Controller
 {
 }
-?>
