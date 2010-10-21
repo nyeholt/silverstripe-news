@@ -9,6 +9,7 @@ Marcus Nyeholt
 ## Requirements
 
 SilverStripe 2.4.x
+legacydatetimefields (http://svn.silverstripe.com/open/modules/legacydatetimefields/trunk/)
 
 ## Documentation
 
