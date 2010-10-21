@@ -53,7 +53,9 @@ class NewsArticle extends Page
 		$fields = parent::getCMSFields();
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new CalendarDateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', $dp = new DateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
+
+		$dp->setConfig('showcalendar', true);
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
