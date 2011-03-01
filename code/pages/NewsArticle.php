@@ -100,7 +100,7 @@ class NewsArticle extends Page
 	/**
 	 * Make sure all parents are published when publishing a news article
 	 */
-	public function onAfterPublish() {
+	public function onBeforePublish() {
 		// go through all parents that are news holders and publish them if they haven't been
 		$parent = $this->Parent();
 		while ($parent && $parent instanceof NewsHolder) {
