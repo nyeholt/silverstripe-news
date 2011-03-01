@@ -149,6 +149,15 @@ class NewsArticle extends Page
 		$holder = $section->getPartitionedHolderForArticle($this);
 		return $holder;
 	}
+	
+	/**
+	 * Indicates if this has an external URL link
+	 *
+	 * @return boolean
+	 */
+	public function HasExternalLink() {
+		return strlen($this->ExternalURL) || $this->InternalFileID;
+	}
 
 	/**
 	 * Link to the news article. If it has an external URL set, or a file, link to that instead. 
