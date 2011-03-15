@@ -111,7 +111,7 @@ class NewsHolder extends Page
 			}
 		}
 
-		$articles = DataObject::get('NewsArticle', $filter, 'OriginalPublishedDate DESC', '', $start.','.$number);
+		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start.','.$number);
 
 		return $articles;
 	}
