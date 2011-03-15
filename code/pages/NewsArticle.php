@@ -30,11 +30,11 @@ class NewsArticle extends Page
     public static $icon = 'news/images/newspaper';
 
 	public static $db = array(
-		'Summary' => 'HTMLText',
-		'Author' => 'Varchar(128)',
-		'OriginalPublishedDate' => 'Date',
-		'ExternalURL' => 'Varchar(255)',
-		'Source' => 'Varchar(128)',
+		'Summary'						=> 'HTMLText',
+		'Author'						=> 'Varchar(128)',
+		'OriginalPublishedDate'			=> 'Date',
+		'ExternalURL'					=> 'Varchar(255)',
+		'Source'						=> 'Varchar(128)',
 	);
 
 	/**
@@ -44,8 +44,9 @@ class NewsArticle extends Page
 	 * @var array
 	 */
 	public static $has_one = array(
-		'InternalFile' => 'File',
-		'NewsSection' => 'NewsHolder',
+		'InternalFile'			=> 'File',
+		'NewsSection'			=> 'NewsHolder',
+		'Thumbnail'				=> 'Image',
 	);
 
 	public function getCMSFields()
@@ -59,6 +60,10 @@ class NewsArticle extends Page
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
+		
+		$fields->addFieldToTab('Root.Content.Main', $if = new ImageField('Thumbnail', _t('NewsArticle.THUMB', 'Thumbnail')), 'Content');
+		$if->setFolderName('news-articles/thumbnails');
+		
 		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
 			$this->OriginalPublishedDate = date('Y-m-d');
