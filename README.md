@@ -10,6 +10,24 @@ Marcus Nyeholt
 
 SilverStripe 2.4.x
 
+## Overview
+
+The News module provides a straightforward method for creating and publishing
+news articles on a website. In some respects it is similar to the Blog module,
+however news articles are meant to be focused more around press release style
+content - this means a News Article can be represented by normal Content, 
+a hosted file (eg a PDF) or a completely remote article on a separate website.
+Additionally, News Articles allow authors to specify a separate Summary from
+the main content, useful for aggregating content references on your site, and
+allows authors to attach a thumbnail for an article.
+
+News Holders can be configured to automatically file contained articles into
+a date based hierarchy, generating a hierarchy for archive purposes. 
+
+Unlike the Blog module, the News Module does not support widgets at all, and
+does not come with Comments enabled by default. While these things could be
+added on by yourself, it is not core to the functionality of the module. 
+
 ## Documentation
 
 Extract to the "news" directory in your SilverStripe folder, and run dev/build.
