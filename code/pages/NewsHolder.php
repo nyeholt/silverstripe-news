@@ -1,48 +1,28 @@
 <?php
-/*
-
-Copyright (c) 2009, SilverStripe Australia PTY LTD - www.silverstripe.com.au
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of SilverStripe nor the names of its contributors may be used to endorse or promote products derived from this software
-      without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-OF SUCH DAMAGE.
-*/
 
 /**
  * A top level page that contains news articles
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @license BSD License http://silverstripe.org/bsd-license/
  */
-class NewsHolder extends Page
-{
+class NewsHolder extends Page {
+
 	public static $db = array(
-		'AutoFiling' => 'Boolean',	// whether articles created in this holder
-									// automatically file into subfolders
-		'PrimaryNewsSection' => 'Boolean',	// whether this holder should be regarded as a primary
-												// news section (some are secondary and merely categorisation tools)
+		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
+													// automatically file into subfolders
+		'FileBy'				=> "Enum('Published,Created','Created')",
+		'PrimaryNewsSection'	=> 'Boolean',		// whether this holder should be regarded as a primary
+													// news section (some are secondary and merely categorisation tools)
 	);
-
+	
 	public static $defaults = array('AutoFiling' => false, 'PrimaryNewsSection' => true);
-
+	
 	public static $icon = 'news/images/newsholder';
-
+	
 	public static $allowed_children = array(
-        'NewsArticle'
-    );
-
-
+		'NewsArticle'
+	);
 	/**
 	 * Should this news article be automatically filed into a year/month/date
 	 * folder on creation.
@@ -50,7 +30,6 @@ class NewsHolder extends Page
 	 * @var boolean
 	 */
 	public static $automatic_filing = true;
-
 	/**
 	 * A bit of a cheat way of letting the template determine how many articles to display.
 	 *
@@ -66,11 +45,11 @@ class NewsHolder extends Page
 	 *
 	 * @return FieldSet
 	 */
-	public function getCMSFields()
-	{
+	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true));
-		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true));
+		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
 		return $fields;
 	}
 
@@ -81,8 +60,7 @@ class NewsHolder extends Page
 	 *
 	 * @return DataObjectSet
 	 */
-	public function Articles($number=null)
-	{
+	public function Articles($number=null) {
 		if (!$number) {
 			$number = $this->numberToDisplay;
 		}
@@ -101,17 +79,16 @@ class NewsHolder extends Page
 			} else {
 				$subholders = new DataObjectSet(array($this));
 			}
-			
+
 			if ($subholders && $subholders->Count()) {
 				$ids = $subholders->column('ID');
 				$filter = singleton('NewsUtils')->dbQuote(array('ParentID IN' => $ids));
-				
 			} else {
-				$filter = singleton('NewsUtils')->dbQuote(array('ParentID = ' =>  (int) $this->ID));
+				$filter = singleton('NewsUtils')->dbQuote(array('ParentID = ' => (int) $this->ID));
 			}
 		}
 
-		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start.','.$number);
+		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number);
 
 		return $articles;
 	}
@@ -121,8 +98,7 @@ class NewsHolder extends Page
 	 *
 	 * @return DataObjectSet
 	 */
-	public function SubSections($allChildren=true)
-	{
+	public function SubSections($allChildren=true) {
 		$subs = null;
 
 		$childHolders = DataObject::get('NewsHolder', singleton('NewsUtils')->dbQuote(array('ParentID =' => $this->ID)));
@@ -148,11 +124,16 @@ class NewsHolder extends Page
 	 *
 	 * @param Page $article
 	 */
-	public function getPartitionedHolderForArticle($article)
-	{
-		$year = date('Y', strtotime($article->Created));
-		$month = date('M', strtotime($article->Created));
-		$day = date('d', strtotime($article->Created));
+	public function getPartitionedHolderForArticle($article) {
+		if ($this->FileBy == 'Published' && $article->OriginalPublishedDate) {
+			$date = $article->OriginalPublishedDate;
+		} else {
+			$date = $article->Created;
+		}
+
+		$year = date('Y', strtotime($date));
+		$month = date('M', strtotime($date));
+		$day = date('d', strtotime($date));
 
 		$yearFolder = $this->dateFolder($year);
 		if (!$yearFolder) {
@@ -179,10 +160,9 @@ class NewsHolder extends Page
 	 * @param String $name
 	 * @param String $type
 	 */
-	public function dateFolder($name, $publish=false)
-	{
+	public function dateFolder($name, $publish=false) {
 		// see if we have a named child, otherwise create one
-		$child = DataObject::get_one('NewsHolder', 'ParentID = '.$this->ID.' AND Title = \''.Convert::raw2sql($name).'\'');
+		$child = DataObject::get_one('NewsHolder', 'ParentID = ' . $this->ID . ' AND Title = \'' . Convert::raw2sql($name) . '\'');
 
 		if (!$child || !$child->ID) {
 			$child = new NewsHolder();
@@ -197,9 +177,9 @@ class NewsHolder extends Page
 		}
 		return $child;
 	}
+
 }
 
-class NewsHolder_Controller extends Page_Controller
-{
+class NewsHolder_Controller extends Page_Controller {
+	
 }
-?>

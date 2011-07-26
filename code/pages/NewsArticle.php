@@ -1,42 +1,21 @@
 <?php
-/*
-
-Copyright (c) 2009, SilverStripe Australia PTY LTD - www.silverstripe.com.au
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of SilverStripe nor the names of its contributors may be used to endorse or promote products derived from this software
-      without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-OF SUCH DAMAGE.
-*/
 
 /**
  * A news article in the system
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
+ * @license BSD License http://silverstripe.org/bsd-license/
  */
-class NewsArticle extends Page
-{
-    public static $icon = 'news/images/newspaper';
+class NewsArticle extends Page {
 
+	public static $icon = 'news/images/newspaper';
 	public static $db = array(
-		'Summary'						=> 'HTMLText',
-		'Author'						=> 'Varchar(128)',
-		'OriginalPublishedDate'			=> 'Date',
-		'ExternalURL'					=> 'Varchar(255)',
-		'Source'						=> 'Varchar(128)',
+		'Summary' => 'HTMLText',
+		'Author' => 'Varchar(128)',
+		'OriginalPublishedDate' => 'Date',
+		'ExternalURL' => 'Varchar(255)',
+		'Source' => 'Varchar(128)',
 	);
-
 	/**
 	 * The InternalFile is used when the news article is mostly contained in a file based item -
 	 * if this is set, then the URL to the item is returned in the call to "Link" for this asset. 
@@ -44,13 +23,12 @@ class NewsArticle extends Page
 	 * @var array
 	 */
 	public static $has_one = array(
-		'InternalFile'			=> 'File',
-		'NewsSection'			=> 'NewsHolder',
-		'Thumbnail'				=> 'Image',
+		'InternalFile' => 'File',
+		'NewsSection' => 'NewsHolder',
+		'Thumbnail' => 'Image',
 	);
 
-	public function getCMSFields()
-	{
+	public function getCMSFields() {
 		$fields = parent::getCMSFields();
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
@@ -60,10 +38,10 @@ class NewsArticle extends Page
 
 		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
-		
+
 		$fields->addFieldToTab('Root.Content.Main', $if = new ImageField('Thumbnail', _t('NewsArticle.THUMB', 'Thumbnail')), 'Content');
 		$if->setFolderName('news-articles/thumbnails');
-		
+
 		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
 			$this->OriginalPublishedDate = date('Y-m-d');
@@ -79,27 +57,34 @@ class NewsArticle extends Page
 	 * When the article is saved, and this article's section dictates that it
 	 * needs to be filed, then do so
 	 */
-	public function onBeforeWrite()
-	{
+	public function onBeforeWrite() {
 		parent::onBeforeWrite();
+		
+		// dummy initial date
 		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
 			$this->OriginalPublishedDate = date('Y-m-d 12:00:00');
 		}
-
+		
 		$parent = $this->Parent();
 
 		// just in case we've been moved, update our section
 		$section = $this->findSection();
 		$this->NewsSectionID = $section->ID;
-		
-		if ($section->ID == $parent->ID && $section->AutoFiling) {
+
+		$newlyCreated = $section->ID == $parent->ID;
+		$changedPublishDate = $this->isChanged('OriginalPublishedDate', 2);
+
+		if (($changedPublishDate || $newlyCreated) && $section->AutoFiling) {
 			if (!$this->Created) {
 				$this->Created = date('Y-m-d H:i:s');
 			}
 			$pp = $this->PartitionParent();
-			$this->ParentID = $pp->ID;
+			if ($pp->ID != $this->ParentID) {
+				$this->ParentID = $pp->ID;
+			}
 		}
+
 	}
 
 	/**
@@ -107,7 +92,22 @@ class NewsArticle extends Page
 	 */
 	public function onBeforePublish() {
 		// go through all parents that are news holders and publish them if they haven't been
-		$parent = $this->Parent();
+		$this->publishSection();
+	}
+	
+	public function onAfterPublish() {
+		// $this->publishSection();
+	}
+
+	/**
+	 * Ensure's the section is published.
+	 * 
+	 * We need to do it both before and after publish because of some quirks with
+	 * folders not existing on one but existing on the other depending on the order of
+	 * writing the objects
+	 */
+	protected function publishSection() {
+		$parent = DataObject::get_by_id('NewsHolder', $this->ParentID);
 		while ($parent && $parent instanceof NewsHolder) {
 			if ($parent->Status != 'Published') {
 				$parent->doPublish();
@@ -121,8 +121,7 @@ class NewsArticle extends Page
 	 *
 	 *  @return NewsHolder
 	 */
-	public function Section()
-	{
+	public function Section() {
 		if ($this->NewsSectionID) {
 			return $this->NewsSection();
 		}
@@ -136,7 +135,7 @@ class NewsArticle extends Page
 	 */
 	public function findSection() {
 		$page = $this;
-		while($page) {
+		while ($page) {
 			if ($page->ParentID == 0 || $page->PrimaryNewsSection) {
 				return $page;
 			}
@@ -148,13 +147,12 @@ class NewsArticle extends Page
 	 * Gets the parent for this article page based on its section, and its
 	 * creation date
 	 */
-	public function PartitionParent()
-	{
+	public function PartitionParent() {
 		$section = $this->findSection();
 		$holder = $section->getPartitionedHolderForArticle($this);
 		return $holder;
 	}
-	
+
 	/**
 	 * Indicates if this has an external URL link
 	 *
@@ -170,8 +168,7 @@ class NewsArticle extends Page
 	 * @param String $action
 	 * @return String
 	 */
-	public function Link($action='')
-	{
+	public function Link($action='') {
 		if (strlen($this->ExternalURL) && !strlen($this->Content)) {
 			// redirect away
 			return $this->ExternalURL;
@@ -182,8 +179,9 @@ class NewsArticle extends Page
 		}
 		return parent::Link($action);
 	}
+
 }
 
-class NewsArticle_Controller extends Page_Controller
-{
+class NewsArticle_Controller extends Page_Controller {
+	
 }
