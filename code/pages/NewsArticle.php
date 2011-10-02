@@ -75,7 +75,7 @@ class NewsArticle extends Page {
 		$newlyCreated = $section->ID == $parent->ID;
 		$changedPublishDate = $this->isChanged('OriginalPublishedDate', 2);
 
-		if (($changedPublishDate || $newlyCreated) && $section->AutoFiling) {
+		if (($changedPublishDate || $newlyCreated) && ($section->AutoFiling || $section->FilingMode)) {
 			if (!$this->Created) {
 				$this->Created = date('Y-m-d H:i:s');
 			}

@@ -11,12 +11,16 @@ class NewsHolder extends Page {
 	public static $db = array(
 		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
 													// automatically file into subfolders
+		'FilingMode'			=> 'Varchar',		// Date, Month, Year
 		'FileBy'				=> "Enum('Published,Created','Created')",
 		'PrimaryNewsSection'	=> 'Boolean',		// whether this holder should be regarded as a primary
 													// news section (some are secondary and merely categorisation tools)
 	);
 	
-	public static $defaults = array('AutoFiling' => false, 'PrimaryNewsSection' => true);
+	public static $defaults = array(
+		'AutoFiling'			=> false, 
+		'PrimaryNewsSection'	=> true
+	);
 	
 	public static $icon = 'news/images/newsholder';
 	
@@ -47,10 +51,28 @@ class NewsHolder extends Page {
 	 */
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true), 'Content');
+//		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true), 'Content');
+
+		$modes = array(
+			''		=> 'No filing',
+			'day'	=> '/Year/Month/Day',
+			'month'	=> '/Year/Month',
+			'year'	=> '/Year'
+		);
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FilingMode', _t('NewsHolder.FILING_MODE', 'File into'), $modes), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
 		return $fields;
+	}
+	
+	public function onBeforeWrite() {
+		parent::onBeforeWrite();
+		
+		// set the filing mode, now that it's being obsolete
+		if ($this->AutoFiling && !$this->FilingMode) {
+			$this->FilingMode = 'day';
+			$this->AutoFiling = false;
+		}
 	}
 
 	/**
@@ -140,9 +162,17 @@ class NewsHolder extends Page {
 			throw new Exception("Failed retrieving folder");
 		}
 
+		if ($this->FilingMode == 'year') {
+			return $yearFolder;
+		}
+
 		$monthFolder = $yearFolder->dateFolder($month);
 		if (!$monthFolder) {
 			throw new Exception("Failed retrieving folder");
+		}
+		
+		if ($this->FilingMode == 'month') {
+			return $monthFolder;
 		}
 
 		$dayFolder = $monthFolder->dateFolder($day);
