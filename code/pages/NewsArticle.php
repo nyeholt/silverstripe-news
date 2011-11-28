@@ -179,9 +179,29 @@ class NewsArticle extends Page {
 		}
 		return parent::Link($action);
 	}
+	
+	 	
+	/**
+	 * Pages to update cache file for static publisher
+	 *
+	 * @return Array
+	 */
+	public function pagesAffectedByChanges() {
+    	$parent = $this->Parent();
+    	$urls 	= array($this->Link());
+		
+		// add all parent (holders)
+		while($parent && $parent->ParentID > -1){
+    		$urls[] = $parent->Link();
+    		$parent = $parent->Parent();
+   		}
+   		
+   		$this->extend('updatePagesAffectedByChanges', $urls);
+    	
+    	return $urls;
+  	}
 
 }
 
 class NewsArticle_Controller extends Page_Controller {
-	
 }
