@@ -188,20 +188,15 @@ class NewsArticle extends Page {
 	 */
 	public function pagesAffectedByChanges() {
     	$parent = $this->Parent();
-    	$articles = DataObject::get('NewsArticle');
-    	
-    	$urls 	= array($this->Link(), $parent->Link());
-		
-		// add all articles
-		foreach($articles as $article){
-			$urls[] = $article->Link();
-		}
+    	$urls 	= array($this->Link());
 		
 		// add all parent (holders)
 		while($parent && $parent->ParentID > -1){
     		$urls[] = $parent->Link();
     		$parent = $parent->Parent();
    		}
+   		
+   		$this->extend('updatePagesAffectedByChanges', $urls);
     	
     	return $urls;
   	}

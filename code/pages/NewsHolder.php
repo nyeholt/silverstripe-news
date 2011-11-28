@@ -213,11 +213,8 @@ class NewsHolder extends Page {
 	 *
 	 * @return Array
 	 */
-	public function subPagesToCache() {
+	public function pagesAffectedByChanges() {
 		$urls = array($this->Link());
-		foreach ($this->Children() as $child){
-			$urls[] = $child->Link();
-		}
 		return $urls;
 	}
 
