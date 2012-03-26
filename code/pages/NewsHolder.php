@@ -207,6 +207,16 @@ class NewsHolder extends Page {
 		}
 		return $child;
 	}
+	
+	/**
+	 * Pages to update cache file for static publisher
+	 *
+	 * @return Array
+	 */
+	public function pagesAffectedByChanges() {
+		$urls = array($this->Link());
+		return $urls;
+	}
 
 }
 
