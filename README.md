@@ -1,5 +1,7 @@
 # News Module
 
+Note: News module for SilverStripe 2.4 is available on the ss24 branch!
+
 ## Maintainer Contact
 
 Marcus Nyeholt
