@@ -25,7 +25,8 @@ class NewsHolder extends Page {
 	public static $icon = 'news/images/newsholder';
 	
 	public static $allowed_children = array(
-		'NewsArticle'
+		'NewsArticle',
+		'NewsHolder'
 	);
 	/**
 	 * Should this news article be automatically filed into a year/month/date
@@ -59,9 +60,9 @@ class NewsHolder extends Page {
 			'month'	=> '/Year/Month',
 			'year'	=> '/Year'
 		);
-		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FilingMode', _t('NewsHolder.FILING_MODE', 'File into'), $modes), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
+		$fields->addFieldToTab('Root.Main', new DropdownField('FilingMode', _t('NewsHolder.FILING_MODE', 'File into'), $modes), 'Content');
+		$fields->addFieldToTab('Root.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
+		$fields->addFieldToTab('Root.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
 		return $fields;
 	}
 	
@@ -99,7 +100,7 @@ class NewsHolder extends Page {
 			if ($subholders) {
 				$subholders->push($this);
 			} else {
-				$subholders = new DataObjectSet(array($this));
+				$subholders = new DataList($this->class);
 			}
 
 			if ($subholders && $subholders->Count()) {
@@ -112,7 +113,10 @@ class NewsHolder extends Page {
 
 		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number);
 
-		return $articles;
+		$entries = PaginatedList::create($articles);
+		$entries->setPaginationFromQuery($articles->dataQuery()->query());
+
+		return $entries;
 	}
 
 	/**
@@ -125,7 +129,7 @@ class NewsHolder extends Page {
 
 		$childHolders = DataObject::get('NewsHolder', singleton('NewsUtils')->dbQuote(array('ParentID =' => $this->ID)));
 		if ($childHolders && $childHolders->Count()) {
-			$subs = new DataObjectSet();
+			$subs = new ArrayList();
 			foreach ($childHolders as $holder) {
 				$subs->push($holder);
 				if ($allChildren === true) {
