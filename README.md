@@ -8,7 +8,7 @@ Marcus Nyeholt
 
 ## Requirements
 
-SilverStripe 2.4.x
+SilverStripe 3.0.x
 
 ## Overview
 

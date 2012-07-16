@@ -31,16 +31,17 @@ class NewsArticle extends Page {
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
 
-		$fields->addFieldToTab('Root.Content.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', $dp = new DateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
+		$fields->addFieldToTab('Root.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
+		$fields->addFieldToTab('Root.Main', $dp = new DateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
 
 		$dp->setConfig('showcalendar', true);
 
-		$fields->addFieldToTab('Root.Content.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
+		$fields->addFieldToTab('Root.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
+		$fields->addFieldToTab('Root.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
 
-		$fields->addFieldToTab('Root.Content.Main', $if = new ImageField('Thumbnail', _t('NewsArticle.THUMB', 'Thumbnail')), 'Content');
-		$if->setFolderName('news-articles/thumbnails');
+		$fields->addFieldToTab('Root.Main', $if = new UploadField('Thumbnail', _t('NewsArticle.THUMB', 'Thumbnail')), 'Content');
+		$if->setConfig('allowedMaxFileNumber', 1)->setFolderName('news-articles/thumbnails');
+		$if->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
 
 		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
@@ -48,8 +49,9 @@ class NewsArticle extends Page {
 		}
 
 		// $fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalPageLinkID', _t('NewsArticle.INTERNAL_PAGE', 'A page on this site for the news')), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
-		$fields->addFieldToTab('Root.Content.Main', new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
+		$fields->addFieldToTab('Root.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
+		$fields->addFieldToTab('Root.Main', $summary = new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
+		$summary->addExtraClass('stacked');
 		return $fields;
 	}
 
