@@ -221,5 +221,17 @@ class NewsHolder extends Page {
 }
 
 class NewsHolder_Controller extends Page_Controller {
+
+    public static $allowed_actions = array('Rss');
+
+    public function init() {
+        RSSFeed::linkToFeed($this->owner->Link() . "rss", _t('News.RSSLINK',"RSS feed for the News"));
+        parent::init();
+    }
+
+    function Rss() {
+        $rss = new RSSFeed(DataObject::get("NewsArticle", "", "LastEdited DESC", "", 10), $this->owner->Link(), _t('News.RSSTITLE',"10 most recent news"), "", "Title", "Content");
+        $rss->outputToBrowser();
+    }
 	
 }
