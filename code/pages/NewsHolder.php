@@ -220,7 +220,8 @@ class NewsHolder extends Page {
 		$child = DataObject::get_one('NewsHolder', 'ParentID = ' . $this->ID . ' AND Title = \'' . Convert::raw2sql($name) . '\'');
 
 		if (!$child || !$child->ID) {
-			$child = new NewsHolder();
+			$class = get_class($this);
+			$child = new $class();
 			$child->Title = $name;
 			$child->ParentID = $this->ID;
 			$child->AutoFiling = false;
