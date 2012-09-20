@@ -41,4 +41,3 @@
 	$Form
 	$PageComments
 </div>
-<% include SideBar %>

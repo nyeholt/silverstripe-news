@@ -8,4 +8,3 @@
 		$PageComments
 	</article>
 </div>
-<% include SideBar %>
