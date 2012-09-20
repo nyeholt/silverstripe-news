@@ -52,7 +52,6 @@ class NewsHolder extends Page {
 	 */
 	public function getCMSFields() {
 		$fields = parent::getCMSFields();
-//		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('AutoFiling', _t('NewsHolder.AUTO_FOLDER', 'Automatically file contained Articles'), true), 'Content');
 
 		$modes = array(
 			''		=> 'No filing',
@@ -143,6 +142,28 @@ class NewsHolder extends Page {
 		}
 
 		return $subs;
+	}
+	
+	/**
+	 * Maintain API compatibility with NewsArticle
+	 * 
+	 * @return NewsHolder
+	 */
+	public function Section() {
+		return $this->findSection();
+	}
+	
+	/**
+	 * Find the section this news article is currently in, based on ancestor pages
+	 */
+	public function findSection() {
+		$page = $this;
+		while ($page && $page->ID) {
+			if ($page->ParentID == 0 || $page->PrimaryNewsSection) {
+				return $page;
+			}
+			$page = $page->Parent();
+		}
 	}
 
 	/**

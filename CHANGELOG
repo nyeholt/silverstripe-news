@@ -1,3 +1,9 @@
+2012-09-19 v2.0.0
+-----------------
+
+* SS3 compatibility
+* Section method available on news holder to make it possible for NewsHolder
+  and NewsArticle to have similar templates
 
 2011-10-03 v1.1.0
 -----------------

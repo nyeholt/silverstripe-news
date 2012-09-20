@@ -136,13 +136,10 @@ class NewsArticle extends Page {
 	 * Find the section this news article is currently in, based on ancestor pages
 	 */
 	public function findSection() {
-		$page = $this;
-		while ($page) {
-			if ($page->ParentID == 0 || $page->PrimaryNewsSection) {
-				return $page;
-			}
-			$page = $page->Parent();
+		if ($this->ParentID && $this->Parent() instanceof NewsHolder) {
+			return $this->Parent()->findSection();
 		}
+		return $this;
 	}
 
 	/**
