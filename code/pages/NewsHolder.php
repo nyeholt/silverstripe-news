@@ -99,7 +99,7 @@ class NewsHolder extends Page {
 			if ($subholders) {
 				$subholders->push($this);
 			} else {
-				$subholders = new DataList($this->class);
+				$subholders = null;
 			}
 
 			if ($subholders && $subholders->Count()) {
