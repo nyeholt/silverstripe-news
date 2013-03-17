@@ -12,7 +12,7 @@ class NewsHolder extends Page {
 		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
 													// automatically file into subfolders
 		'FilingMode'			=> 'Varchar',		// Date, Month, Year
-		'FileBy'				=> "Enum('Published,Created','Created')",
+		'FileBy'				=> "Varchar",
 		'PrimaryNewsSection'	=> 'Boolean',		// whether this holder should be regarded as a primary
 													// news section (some are secondary and merely categorisation tools)
 	);
