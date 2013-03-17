@@ -174,6 +174,9 @@ class NewsHolder extends Page {
 	public function getPartitionedHolderForArticle($article) {
 		if ($this->FileBy == 'Published' && $article->OriginalPublishedDate) {
 			$date = $article->OriginalPublishedDate;
+		} else if ($this->hasField($this->FileBy)) {
+			$field = $this->FileBy;
+			$date = $this->$field;
 		} else {
 			$date = $article->Created;
 		}
