@@ -1,3 +1,8 @@
+2013-04-02 v2.0.1
+-----------------
+
+* Ensure "start" param is >= 0 when paginating list of news articles
+
 2012-09-19 v2.0.0
 -----------------
 

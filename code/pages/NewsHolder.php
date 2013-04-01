@@ -88,6 +88,9 @@ class NewsHolder extends Page {
 		}
 
 		$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
+		if ($start < 0) {
+			$start = 0;
+		}
 
 		$articles = null;
 		$filter = null;
