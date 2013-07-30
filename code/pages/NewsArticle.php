@@ -15,6 +15,7 @@ class NewsArticle extends Page {
 		'OriginalPublishedDate' => 'Date',
 		'ExternalURL' => 'Varchar(255)',
 		'Source' => 'Varchar(128)',
+		'ClearArticle'		=> 'Boolean',
 	);
 	/**
 	 * The InternalFile is used when the news article is mostly contained in a file based item -
@@ -48,7 +49,9 @@ class NewsArticle extends Page {
 		}
 
 		// $fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalPageLinkID', _t('NewsArticle.INTERNAL_PAGE', 'A page on this site for the news')), 'Content');
+
 		$fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('ClearArticle', _t('NewsArticle.CLEAR_FILE', 'Clear selection')), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
 		return $fields;
 	}
@@ -59,23 +62,35 @@ class NewsArticle extends Page {
 	 */
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
-		
+
 		// dummy initial date
 		if (!$this->OriginalPublishedDate) {
 			// @TODO Fix this to be correctly localized!!
 			$this->OriginalPublishedDate = date('Y-m-d 12:00:00');
 		}
-		
+
 		$parent = $this->Parent();
+
+		if ($this->ClearArticle) {
+			$this->ClearArticle = false;
+			$this->InternalFileID = 0;
+		}
 
 		// just in case we've been moved, update our section
 		$section = $this->findSection();
 		$this->NewsSectionID = $section->ID;
 
 		$newlyCreated = $section->ID == $parent->ID;
-		$changedPublishDate = $this->isChanged('OriginalPublishedDate', 2);
+		
+		$dateChange = false;
+		foreach ($this->getChangedFields(false, 2) as $field => $change) {
+			$fieldObj = $this->obj($field);
+			if ($fieldObj instanceof Date) {
+				$dateChange = true;
+			}
+		}
 
-		if (($changedPublishDate || $newlyCreated) && ($section->AutoFiling || $section->FilingMode)) {
+		if (($dateChange || $newlyCreated) && ($section->AutoFiling || $section->FilingMode)) {
 			if (!$this->Created) {
 				$this->Created = date('Y-m-d H:i:s');
 			}
@@ -94,14 +109,14 @@ class NewsArticle extends Page {
 		// go through all parents that are news holders and publish them if they haven't been
 		$this->publishSection();
 	}
-	
+
 	public function onAfterPublish() {
 		// $this->publishSection();
 	}
 
 	/**
 	 * Ensure's the section is published.
-	 * 
+	 *
 	 * We need to do it both before and after publish because of some quirks with
 	 * folders not existing on one but existing on the other depending on the order of
 	 * writing the objects
@@ -179,8 +194,8 @@ class NewsArticle extends Page {
 		}
 		return parent::Link($action);
 	}
-	
-	 	
+
+
 	/**
 	 * Pages to update cache file for static publisher
 	 *
@@ -188,20 +203,24 @@ class NewsArticle extends Page {
 	 */
 	public function pagesAffectedByChanges() {
     	$parent = $this->Parent();
-    	$urls 	= array($this->Link());
-		
+    	$urls 	= array();
+		if (!$this->InternalFileID) {
+			$urls[] = $this->Link();
+		}
+
 		// add all parent (holders)
 		while($parent && $parent->ParentID > -1){
     		$urls[] = $parent->Link();
     		$parent = $parent->Parent();
    		}
-   		
+
    		$this->extend('updatePagesAffectedByChanges', $urls);
-    	
+
     	return $urls;
   	}
 
 }
 
 class NewsArticle_Controller extends Page_Controller {
+	
 }

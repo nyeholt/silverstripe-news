@@ -11,19 +11,25 @@ class NewsHolder extends Page {
 	public static $db = array(
 		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
 													// automatically file into subfolders
+		'ArchiveAfter'			=> 'Varchar',		// if set, child items will be archived after this number of days
+		
 		'FilingMode'			=> 'Varchar',		// Date, Month, Year
-		'FileBy'				=> "Enum('Published,Created','Created')",
+		'FileBy'				=> "Varchar",
 		'PrimaryNewsSection'	=> 'Boolean',		// whether this holder should be regarded as a primary
 													// news section (some are secondary and merely categorisation tools)
+		'OrderBy'				=> 'Varchar',		// what field to order by
+		'OrderDir'				=> 'Varchar',		// what direction to order by
 	);
-	
+
 	public static $defaults = array(
-		'AutoFiling'			=> false, 
+		'AutoFiling'			=> false,
 		'PrimaryNewsSection'	=> true
 	);
-	
+
 	public static $icon = 'news/images/newsholder';
-	
+
+	public static $month_format = 'M';
+
 	public static $allowed_children = array(
 		'NewsArticle'
 	);
@@ -39,7 +45,7 @@ class NewsHolder extends Page {
 	 *
 	 * We need to do this because using something like <% if Articles(2).HasMore %> doesn't work, as
 	 * the .HasMore isn't parsed correctly...
-	 * 
+	 *
 	 * @var int
 	 */
 	protected $numberToDisplay = 10;
@@ -59,19 +65,42 @@ class NewsHolder extends Page {
 			'month'	=> '/Year/Month',
 			'year'	=> '/Year'
 		);
+
 		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FilingMode', _t('NewsHolder.FILING_MODE', 'File into'), $modes), 'Content');
 		$fields->addFieldToTab('Root.Content.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('OrderBy', _t('NewsHolder.ORDER_BY', 'Order by'), array('OriginalPublishedDate' => 'Published', 'Created' => 'Created')), 'Content');
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('OrderDir', _t('NewsHolder.ORDER_DIR', 'Order direction'), array('DESC' => 'Descending date', 'ASC' => 'Ascending date')), 'Content');
+		
 		$fields->addFieldToTab('Root.Content.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
+		
+		$times = array(
+			''			=> 'Never',
+			86400*7		=> '1 week',
+			86400*30	=> '1 month',
+			86400*60	=> '2 months',
+			86400*90	=> '3 months',
+		);
+
+		$fields->addFieldToTab('Root.Content.Main', new DropdownField('ArchiveAfter', _t('NewsHolder.ARCHIVE_AFTER', 'Archive after'), $times), 'Content');
+		
+		$this->extend('updateNewsHolderCMSFields', $fields);
+		
 		return $fields;
 	}
-	
+
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
-		
+
 		// set the filing mode, now that it's being obsolete
 		if ($this->AutoFiling && !$this->FilingMode) {
 			$this->FilingMode = 'day';
 			$this->AutoFiling = false;
+		}
+	}
+	
+	public function onAfterWrite() {
+		if (strlen($this->ArchiveAfter)) {
+			$this->getArchive();
 		}
 	}
 
@@ -110,8 +139,12 @@ class NewsHolder extends Page {
 			}
 		}
 
-		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number);
-
+		$orderBy = strlen($this->OrderBy) ? $this->OrderBy : 'OriginalPublishedDate';
+		$dir = strlen($this->OrderDir) ? $this->OrderDir : 'DESC';
+		if (!in_array($dir, array('ASC', 'DESC'))) {
+			$dir = 'DESC';
+		}
+		$articles = DataObject::get('NewsArticle', $filter, "\"$orderBy\" $dir, \"ID\" DESC", '', $start . ',' . $number);
 		return $articles;
 	}
 
@@ -120,10 +153,12 @@ class NewsHolder extends Page {
 	 *
 	 * @return DataObjectSet
 	 */
-	public function SubSections($allChildren=true) {
+	public function SubSections($allChildren = true) {
 		$subs = null;
 
 		$childHolders = DataObject::get('NewsHolder', singleton('NewsUtils')->dbQuote(array('ParentID =' => $this->ID)));
+		//var_dump($childHolders);
+
 		if ($childHolders && $childHolders->Count()) {
 			$subs = new DataObjectSet();
 			foreach ($childHolders as $holder) {
@@ -135,9 +170,9 @@ class NewsHolder extends Page {
 						$subs->merge($subSub);
 					}
 				}
+
 			}
 		}
-
 		return $subs;
 	}
 
@@ -147,14 +182,22 @@ class NewsHolder extends Page {
 	 * @param Page $article
 	 */
 	public function getPartitionedHolderForArticle($article) {
+		$date = null;
 		if ($this->FileBy == 'Published' && $article->OriginalPublishedDate) {
 			$date = $article->OriginalPublishedDate;
 		} else {
+			$fileBy = $this->FileBy;
+			if (strlen($fileBy) && $article->hasField($fileBy)) {
+				$date = $article->$fileBy;
+			} 
+		}
+		
+		if (!$date) {
 			$date = $article->Created;
 		}
 
 		$year = date('Y', strtotime($date));
-		$month = date('M', strtotime($date));
+		$month = date(self::$month_format, strtotime($date));
 		$day = date('d', strtotime($date));
 
 		$yearFolder = $this->dateFolder($year);
@@ -170,7 +213,7 @@ class NewsHolder extends Page {
 		if (!$monthFolder) {
 			throw new Exception("Failed retrieving folder");
 		}
-		
+
 		if ($this->FilingMode == 'month') {
 			return $monthFolder;
 		}
@@ -207,7 +250,7 @@ class NewsHolder extends Page {
 		}
 		return $child;
 	}
-	
+
 	/**
 	 * Pages to update cache file for static publisher
 	 *
@@ -217,7 +260,40 @@ class NewsHolder extends Page {
 		$urls = array($this->Link());
 		return $urls;
 	}
+	
+	public function getArchive() {
+		$archive = DataObject::get_one('Page', '"ParentID" = ' . $this->ID . ' AND "URLSegment" = \'archive\'');
 
+		if ($archive && !($archive instanceof NewsHolder)) {
+			$archive->URLSegment = 'old-archive';
+			$doPublish = $archive->isPublished();
+			$archive->write();
+			if ($doPublish) {
+				$archive->doPublish();
+			}
+			$archive = null;
+		}
+
+		if (!$archive) {
+			$stage = Versioned::current_stage();
+			if (!$stage || $stage == 'Stage') {
+				$archive = new NewsHolder(array(
+					'Title'			=> 'Archive',
+					'ParentID'		=> $this->ID,
+					'URLSegment'	=> 'archive',
+					'ShowInMenus'	=> false,
+					'AutoFiling'		=> true,
+					'FilingMode'		=> 'month',
+					'FileBy' 			=> 'Published',
+					'PrimaryNewsSection'	=> true,
+				));
+
+				$archive->write();
+			}
+		}
+		
+		return $archive;
+	}
 }
 
 class NewsHolder_Controller extends Page_Controller {
