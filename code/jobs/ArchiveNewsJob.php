@@ -12,7 +12,10 @@ if (class_exists('AbstractQueuedJob')) {
 	   
 	   public function __construct() {
 		   if (!$this->totalSteps) {
-			   $this->totalSteps = $this->getHolders()->count();
+			   $holders = $this->getHolders();
+			   if ($holders) {
+				   $this->totalSteps = $holders->count();
+			   }
 		   }
 	   }
 
