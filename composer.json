@@ -1,5 +1,5 @@
 {
-	"name": "nyeholt/silverstripe-news",
+	"name": "nyeholt/news",
 	"description": "News module for silverstripe",
 	"type": "silverstripe-module",
 	"keywords": ["silverstripe", "news"],
