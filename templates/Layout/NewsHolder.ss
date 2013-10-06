@@ -5,10 +5,10 @@
 			$Content
 			<!-- if there's some subsections, lets use those and list their children -->
 			<% if SubSections(false) %>
-				<% control SubSections(false) %>
+				<% loop SubSections(false) %>
 				<h2><a href="$Link">$Title.XML</a></h2>
 				<% include NewsListItem %>
-				<% end_control %>
+				<% end_loop %>
 			<% else %>
 				<!-- otherwise, lets just use the children of the current news holder -->
 				<% include NewsListItem %>
@@ -25,13 +25,13 @@
 					  </div>
 					  <% end_if %>
 					  <span>
-						<% if Articles.PaginationSummary %><% control Articles.PaginationSummary %>
+						<% if Articles.PaginationSummary %><% loop Articles.PaginationSummary %>
 						  <% if CurrentBool %>
 							$PageNum
 						  <% else %>
 							<a href="$Link" title="View page number $PageNum">$PageNum</a>
 						  <% end_if %>
-						<% end_control %><% end_if %>
+						<% end_loop %><% end_if %>
 					  </span>
 					</div>
 				 <% end_if %>

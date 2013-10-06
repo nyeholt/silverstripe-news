@@ -8,7 +8,7 @@
  */
 class NewsHolder extends Page {
 
-	public static $db = array(
+	private static $db = array(
 		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
 													// automatically file into subfolders
 		'FilingMode'			=> 'Varchar',		// Date, Month, Year
@@ -17,14 +17,14 @@ class NewsHolder extends Page {
 													// news section (some are secondary and merely categorisation tools)
 	);
 	
-	public static $defaults = array(
+	private static $defaults = array(
 		'AutoFiling'			=> false, 
 		'PrimaryNewsSection'	=> true
 	);
 	
-	public static $icon = 'news/images/newsholder';
+	private static $icon = 'news/images/newsholder';
 	
-	public static $allowed_children = array(
+	private static $allowed_children = array(
 		'NewsArticle',
 		'NewsHolder'
 	);
@@ -34,7 +34,7 @@ class NewsHolder extends Page {
 	 *
 	 * @var boolean
 	 */
-	public static $automatic_filing = true;
+	private static $automatic_filing = true;
 	/**
 	 * A bit of a cheat way of letting the template determine how many articles to display.
 	 *

@@ -1,5 +1,5 @@
 <ul class="newsArticles">
-	<% if Articles %><% control Articles %>
+	<% if Articles %><% loop Articles %>
 	<li>
 	<h3><a href="$Link">$Title</a></h3>
 	<% if Thumbnail %>
@@ -12,5 +12,5 @@
 	<p>$Summary</p>
 	<p><a href="$Link">Read the full article... </a></p>
 	</li>
-	<% end_control %><% end_if %>
+	<% end_loop %><% end_if %>
 </ul>
