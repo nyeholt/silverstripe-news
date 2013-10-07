@@ -8,8 +8,8 @@
  */
 class NewsArticle extends Page {
 
-	public static $icon = 'news/images/newspaper';
-	public static $db = array(
+	private static $icon = 'news/images/newspaper';
+	private static $db = array(
 		'Summary' => 'HTMLText',
 		'Author' => 'Varchar(128)',
 		'OriginalPublishedDate' => 'Date',
@@ -22,7 +22,7 @@ class NewsArticle extends Page {
 	 *
 	 * @var array
 	 */
-	public static $has_one = array(
+	private static $has_one = array(
 		'InternalFile' => 'File',
 		'NewsSection' => 'NewsHolder',
 		'Thumbnail' => 'Image',
