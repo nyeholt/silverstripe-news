@@ -250,6 +250,29 @@ class NewsHolder extends Page {
 		return $urls;
 	}
 
+	/**
+	 * We do not want to use NewsHolder->SubSections because this splits the paginations into
+	 * the categories the articles are in which means the pagination will not work or will display
+	 * multiple times
+	 *
+	 * @return Array
+	 */
+	public function TotalChildArticles($number = null) {
+		if (!$number) {
+			$number = $this->numberToDisplay;
+		}
+
+		$start = isset($_REQUEST['start']) ? (int) $_REQUEST['start'] : 0;
+		if ($start < 0) {
+			$start = 0;
+		}
+
+		$articles = NewsArticle::get('NewsArticle', '', '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number)
+			->filter(array('ID' => $this->getDescendantIDList()));
+		$entries = PaginatedList::create($articles);
+		$entries->setPaginationFromQuery($articles->dataQuery()->query());
+		return $entries;
+	}
 }
 
 class NewsHolder_Controller extends Page_Controller {
