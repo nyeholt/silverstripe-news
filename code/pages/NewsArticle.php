@@ -52,6 +52,9 @@ class NewsArticle extends Page {
 		$fields->addFieldToTab('Root.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
 		$fields->addFieldToTab('Root.Main', $summary = new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
 		$summary->addExtraClass('stacked');
+
+		$this->extend('updateArticleCMSFields', $fields);
+		
 		return $fields;
 	}
 

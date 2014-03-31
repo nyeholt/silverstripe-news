@@ -49,3 +49,43 @@ eventual parent location isn't visible, the article will initially appear in
 the root of the site tree, even though it has been created underneath the
 correct location. Refreshing the tree fixes this problem. 
 
+Pagination will not work when using the SubSections loop when the holder
+contains child holder pages because the Pagination details will be separate for
+each child holder page.
+Use the TotalChildArticles loop instead of SubSections to get around this.
+
+```
+<% if TotalChildArticles %>
+		<div <% if FirstLast %>class="$FirstLast"<% end_if %>>
+			<% include NewsListItem %>
+		</div>
+		<% if TotalChildArticles.MoreThanOnePage %>
+			<div id="NextPrevLinks" class="news-pagination">
+			  <% if TotalChildArticles.NotLastPage %>
+				<div id="NextLink" class="next">
+					<p><a class="next" href="$TotalChildArticles.NextLink" 
+						title="View the next page">See older articles</a></p>
+				</div>
+			  <% end_if %>
+			  <% if TotalChildArticles.NotFirstPage %>
+				<div id="PrevLink" class="previous">
+					<p><a class="prev" href="$TotalChildArticles.PrevLink" 
+						title="View the previous page">See newer articles</a></p>
+				</div>
+			  <% end_if %>
+			  <span>
+				<% if TotalChildArticles.PaginationSummary %><% loop TotalChildArticles.PaginationSummary %>
+				  <% if CurrentBool %>
+					<p class="current">
+						$PageNum
+					</p>
+				  <% else %>
+					<a class="pagination-link" href="$Link" i
+						title="View page number $PageNum">$PageNum</a>
+				  <% end_if %>
+				<% end_loop %><% end_if %>
+			  </span>
+			</div>
+		 <% end_if %>
+<% end_if %>
+```
