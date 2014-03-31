@@ -114,7 +114,7 @@ class NewsArticle extends Page {
 	protected function publishSection() {
 		$parent = DataObject::get_by_id('NewsHolder', $this->ParentID);
 		while ($parent && $parent instanceof NewsHolder) {
-			if ($parent->Status != 'Published') {
+			if (!$parent->isPublished()) {
 				$parent->doPublish();
 			}
 			$parent = $parent->Parent();
