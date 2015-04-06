@@ -18,4 +18,11 @@ class NewsAdmin extends ModelAdmin {
 		'NewsPost'
 	);
 
+
+	public function init(){
+		Config::inst()->update('NewsPost', 'pages_admin', false);
+		parent::init();
+
+	}
+
 } 
