@@ -61,7 +61,7 @@ class NewsPageExtension extends DataExtension {
 						$arrTags[$strLower] = new ArrayData(array(
 							'Tag'		=> $strItem,
 							'Count'		=> $row['Items'],
-							'Link'		=> $newsIndex->Link('tags/' . urlencode($strItem))
+							'Link'		=> $newsIndex->Link('tag/' . urlencode($strItem))
 						));
 					}
 					else{

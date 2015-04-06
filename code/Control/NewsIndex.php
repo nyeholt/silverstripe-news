@@ -38,9 +38,6 @@ class NewsIndex_Controller extends Page_Controller {
 		'archive'
 	);
 
-	public function init(){
-		parent::init();
-	}
 
 	public function tag(){
 		return $this;
@@ -83,6 +80,7 @@ class NewsIndex_Controller extends Page_Controller {
 			$items = $items->where('DATE_FORMAT(\'' . $strPattern .  '\') = \'' . Convert::raw2sql($this->request->param('ID')) . '\'');
 		}
 
+		$items = $items->Sort('DateTime DESC');
 
 		$paginatedList = new PaginatedList($items, $request);
 		$paginatedList->setPageLength($this->ItemsPerPage ? : SiteConfig::current_site_config()->ItemsPerPage ? : 10 );

@@ -25,4 +25,30 @@ class NewsAdmin extends ModelAdmin {
 		parent::init();
 	}
 
+	public function getEditForm($id = null, $fields = null){
+		$form = parent::getEditForm($id, $fields);
+
+		if(!ClassInfo::exists('GridFieldBetterButtonsItemRequest')){
+			$arrNewsPosts = ClassInfo::subclassesFor('NewsPost');
+			if(in_array($this->modelClass, $arrNewsPosts)){
+				$field = $form->Fields()->dataFieldByName($this->modelClass);
+				if($field){
+					$field->getConfig()->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
+				}
+			}
+		}
+
+		return $form;
+
+	}
+
+
+	public function getList() {
+		$list = parent::getList();
+		$list = $list->sort('DateTime DESC');
+		return $list;
+	}
+
+
+
 } 
