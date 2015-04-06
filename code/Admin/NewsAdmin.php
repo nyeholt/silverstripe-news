@@ -15,14 +15,14 @@ class NewsAdmin extends ModelAdmin {
 	private static $menu_title = 'News';
 
 	private static $managed_models = array(
-		'NewsPost'
+		'NewsPost',
+		'NewsCategory'
 	);
 
 
 	public function init(){
 		Config::inst()->update('NewsPost', 'pages_admin', false);
 		parent::init();
-
 	}
 
 } 
