@@ -1,0 +1,6 @@
+SiteConfig:
+  extensions:
+    - NewsConfigs
+Page_Controller:
+  extensions:
+    - NewsPageExtension
