@@ -1,0 +1,16 @@
+{
+    "name": "silverstripers/silverstripe-news",
+    "description": "A simple news module for SilverStripe",
+    "type": "silverstripe-news",
+    "keywords": ["silverstripe", "news"],
+	  "license": "BSD-3-Clause",
+    "authors": [
+    {
+        "name": "Nivanka Fonseka",
+        "email": "nivanka@silverstripers.com"
+    }],
+    "require": {
+        "silverstripe/framework": "~3.1"
+    }
+    
+}
