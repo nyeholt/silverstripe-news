@@ -1,4 +1,0 @@
-
-CMSMain:
-  extensions:
-    - NewsCMSMainExtension
