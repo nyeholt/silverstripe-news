@@ -3,7 +3,7 @@
     "description": "A simple news module for SilverStripe",
     "type": "silverstripe-module",
     "keywords": ["silverstripe", "news"],
-	  "license": "BSD-3-Clause",
+    "license": "BSD-3-Clause",
     "authors": [
     {
         "name": "Nivanka Fonseka",
