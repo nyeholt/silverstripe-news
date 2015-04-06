@@ -1,7 +1,7 @@
 {
     "name": "silverstripers/silverstripe-news",
     "description": "A simple news module for SilverStripe",
-    "type": "silverstripe-news",
+    "type": "silverstripe-module",
     "keywords": ["silverstripe", "news"],
 	  "license": "BSD-3-Clause",
     "authors": [
