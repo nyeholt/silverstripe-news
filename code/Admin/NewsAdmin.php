@@ -14,6 +14,8 @@ class NewsAdmin extends ModelAdmin {
 	private static $url_segment = 'news';
 	private static $menu_title = 'News';
 
+	public $showImportForm = false;
+
 	private static $managed_models = array(
 		'NewsPost',
 		'NewsCategory'
@@ -21,20 +23,39 @@ class NewsAdmin extends ModelAdmin {
 
 
 	public function init(){
+		Versioned::set_reading_mode('stage');
 		Config::inst()->update('NewsPost', 'pages_admin', false);
 		parent::init();
 	}
 
+
+	public function getSearchContext(){
+
+		if($this->IsEditingNews()){
+			$context = new NewsSearchContext($this->modelClass);
+			foreach($context->getFields() as $field)
+				$field->setName(sprintf('q[%s]', $field->getName()));
+
+			foreach($context->getFilters() as $filter)
+				$filter->setFullName(sprintf('q[%s]', $filter->getFullName()));
+
+			$this->extend('updateSearchContext', $context);
+			return $context;
+
+		}
+
+		return parent::getSearchContext();
+	}
+
+
+
 	public function getEditForm($id = null, $fields = null){
 		$form = parent::getEditForm($id, $fields);
 
-		if(!ClassInfo::exists('GridFieldBetterButtonsItemRequest')){
-			$arrNewsPosts = ClassInfo::subclassesFor('NewsPost');
-			if(in_array($this->modelClass, $arrNewsPosts)){
-				$field = $form->Fields()->dataFieldByName($this->modelClass);
-				if($field){
-					$field->getConfig()->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
-				}
+		if(!ClassInfo::exists('GridFieldBetterButtonsItemRequest') && $this->IsEditingNews()){
+			$field = $form->Fields()->dataFieldByName($this->modelClass);
+			if($field){
+				$field->getConfig()->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
 			}
 		}
 
@@ -45,8 +66,16 @@ class NewsAdmin extends ModelAdmin {
 
 	public function getList() {
 		$list = parent::getList();
-		$list = $list->sort('DateTime DESC');
+		if($this->IsEditingNews()){
+			$list = $list->sort('DateTime DESC');
+		}
 		return $list;
+	}
+
+
+	public function IsEditingNews(){
+		$arrClasses = ClassInfo::subclassesFor('NewsPost');
+		return in_array($this->modelClass, $arrClasses);
 	}
 
 
