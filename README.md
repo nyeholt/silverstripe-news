@@ -2,6 +2,8 @@
 
 SilverStripe news is a standalone module which provides content editor features to have news and blog posts in a SilverStripe website. 
 
+Read more at [SilverStripers.com blog](http://www.silverstripers.com/blog/silverstripe-news-module)
+
 ## Installing 
 
 User composer to install
@@ -106,7 +108,7 @@ to show news items on your news index use the following code or similar.
             <ul>
                 <% if $Items.NotFirstPage %>
                     <li>
-                        <a class="prev" href="{$Items.PrevLink}"><span class="ncsh-arrow-left2"></span></a>
+                        <a class="prev" href="{$Items.PrevLink}"><span class="arrow-left"></span></a>
                     </li>
                 <% end_if %>
                 <% loop $Items.Pages %>
@@ -120,7 +122,7 @@ to show news items on your news index use the following code or similar.
                 <% end_loop %>
                 <% if $Items.NotLastPage %>
                     <li>
-                        <a class="next" href="{$Items.NextLink}"><span class="ncsh-arrow-right22"></span></a>
+                        <a class="next" href="{$Items.NextLink}"><span class="arrow-right"></span></a>
                     </li>
                 <% end_if %>
             </ul>
