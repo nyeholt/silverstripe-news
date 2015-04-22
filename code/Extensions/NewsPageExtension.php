@@ -13,6 +13,14 @@ class NewsPageExtension extends DataExtension {
 		return NewsIndex::get()->first();
 	}
 
+	public function LatestNewsPosts($iCount = 5, $strClass = ""){
+		$list = NewsPost::get()->limit($iCount)->sort('DateTime DESC');
+		if($strClass){
+			$list = $list->filter('ClassName', $strClass);
+		}
+		return $list;
+	}
+
 	public function BlogArchives(){
 
 		if($newsIndex = $this->NewsIndex()){
