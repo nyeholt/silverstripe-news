@@ -69,6 +69,9 @@ class NewsAdmin extends ModelAdmin {
 		if($this->IsEditingNews()){
 			$list = $list->sort('DateTime DESC');
 		}
+
+		$this->extend('updateNewsList', $list);
+
 		return $list;
 	}
 

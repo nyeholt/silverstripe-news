@@ -82,6 +82,8 @@ class NewsIndex_Controller extends Page_Controller {
 
 		$items = $items->Sort('DateTime DESC');
 
+		$this->extend('updateItemsList', $items);
+
 		$paginatedList = new PaginatedList($items, $request);
 		$paginatedList->setPageLength($this->ItemsPerPage ? : SiteConfig::current_site_config()->ItemsPerPage ? : 10 );
 		return $paginatedList;

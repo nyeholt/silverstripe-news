@@ -14,6 +14,7 @@ class NewsHierarchy extends Hierarchy {
 									$numChildrenMethod = "numChildren", $rootCall = true,
 									$nodeCountThreshold = null, $nodeCountCallback = null) {
 
+
 		if($this->owner->ClassName == 'NewsIndex'){
 			$strURL = Director::baseURL() . '/admin/news?ParentID=' . $this->owner->ID;
 			$output = "<ul$attributes>\n";

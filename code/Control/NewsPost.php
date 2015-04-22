@@ -56,6 +56,8 @@ class NewsPost extends Page {
 			'Content');
 		}
 
+		$this->extend('updateNewsPostCMSFields', $fields);
+
 		return $fields;
 
 	}
