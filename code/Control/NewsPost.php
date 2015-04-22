@@ -64,6 +64,26 @@ class NewsPost extends Page {
 		return ClassInfo::subclassesFor('NewsPost');
 	}
 
+
+	/**
+	 * @return ArrayList
+	 * return a list of tags as a list of ArrayData's
+	 */
+	public function TagList(){
+		$list = new ArrayList();
+		$newsIndex = $this->Parent();
+
+		foreach(explode(',', $this->Tags) as $tag){
+			$tag = trim($tag);
+			$list->push(new ArrayData(array(
+				'Tag'		=> $tag,
+				'Link'		=> $newsIndex->Link('tag/' . urlencode($tag))
+			)));
+		}
+
+		return $list;
+	}
+
 }
 
 class NewsPost_Controller extends Page_Controller {

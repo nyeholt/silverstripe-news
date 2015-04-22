@@ -72,7 +72,7 @@ class NewsIndex_Controller extends Page_Controller {
 		$items = NewsPost::get()->filter('ParentID', $this->ID);
 
 		if($this->IsTag()){
-			$items = $items->filter('Tag:PartialMatch', $this->request->param('ID'));
+			$items = $items->filter('Tags:PartialMatch', $this->request->param('ID'));
 		}
 
 		if($this->IsArchive()){
