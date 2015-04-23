@@ -9,7 +9,10 @@
 
 class NewsPageExtension extends DataExtension {
 
-	public function NewsIndex(){
+	public function NewsIndex($strClass =''){
+		if($strClass)
+			return NewsIndex::get()->find('ClassName', $strClass);
+		
 		return NewsIndex::get()->first();
 	}
 
