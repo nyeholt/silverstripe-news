@@ -11,7 +11,7 @@ class NewsPageExtension extends DataExtension {
 
 	public function NewsIndex($strClass =''){
 		if($strClass)
-			return NewsIndex::get()->find('ClassName', $strClass);
+			return NewsIndex::get()->filter('ClassName', $strClass)->first();
 		
 		return NewsIndex::get()->first();
 	}
