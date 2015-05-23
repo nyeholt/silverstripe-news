@@ -110,4 +110,11 @@ class NewsIndex_Controller extends Page_Controller {
 		));
 	}
 
+	/**
+	 * @return int
+	 */
+	function NewsItemsPerPage(){
+		return $this->ItemsPerPage ? : SiteConfig::current_site_config()->ItemsPerPage ? : 10;
+	}
+
 }
