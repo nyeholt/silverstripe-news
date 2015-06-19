@@ -21,6 +21,8 @@ class NewsAdmin extends ModelAdmin {
 		'NewsCategory'
 	);
 
+	private static $exclude_classes = array();
+
 
 	public function init(){
 		Versioned::set_reading_mode('stage');
@@ -28,11 +30,28 @@ class NewsAdmin extends ModelAdmin {
 		parent::init();
 	}
 
+	public function getSearchableClasses(){
+		$arrRet = array();
+		$arrClasses = ClassInfo::subclassesFor('NewsPost');
+		$arrExclude = Config::inst()->get('NewsAdmin', 'exclude_classes');
+		if(!empty($arrExclude)){
+			foreach($arrClasses as $strClass){
+				if(!in_array($strClass, $arrExclude)){
+					$arrRet[] = $strClass;
+				}
+			}
+		}
+		else{
+			$arrRet = $arrClasses;
+		}
+		return $arrRet;
+	}
+
 
 	public function getSearchContext(){
 
 		if($this->IsEditingNews()){
-			$context = new NewsSearchContext($this->modelClass);
+			$context = new NewsSearchContext($this->modelClass, $this);
 			foreach($context->getFields() as $field)
 				$field->setName(sprintf('q[%s]', $field->getName()));
 
@@ -67,7 +86,7 @@ class NewsAdmin extends ModelAdmin {
 	public function getList() {
 		$list = parent::getList();
 		if($this->IsEditingNews()){
-			$list = $list->sort('DateTime DESC');
+			$list = $list->sort('DateTime DESC')->filter('ClassName', $this->getSearchableClasses());
 		}
 
 		$this->extend('updateNewsList', $list);

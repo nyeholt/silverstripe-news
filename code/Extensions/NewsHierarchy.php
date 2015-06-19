@@ -15,11 +15,11 @@ class NewsHierarchy extends Hierarchy {
 									$nodeCountThreshold = null, $nodeCountCallback = null) {
 
 
-		if($this->owner->ClassName == 'NewsIndex'){
-			$strURL = Director::baseURL() . '/admin/news?ParentID=' . $this->owner->ID;
+		if(is_a($this->owner, 'NewsIndex')){
+			$strURL = $this->owner->getNewsItemsEditLink();
 			$output = "<ul$attributes>\n";
 			$output.= '<li class="readonly">
-				<a class="cms-panel-link" data-pjax-target="Content" href="' . $strURL . '">Use News admin to manage pages of this tree</a>
+				<a class="cms-panel-link" data-pjax-target="Content" href="' . $strURL . '">' . $this->owner->getTreeEditLinkText() .  '</a>
 			</li>';
 			$output.= "</ul>";
 			return $output;

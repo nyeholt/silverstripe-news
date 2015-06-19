@@ -28,6 +28,14 @@ class NewsIndex extends Page {
 		return $fields;
 	}
 
+	function getNewsItemsEditLink(){
+		return Director::baseURL() . '/admin/news?ParentID=' . $this->ID;
+	}
+
+	function getTreeEditLinkText(){
+		return 'Use News admin to manage pages of this tree';
+	}
+
 }
 
 class NewsIndex_Controller extends Page_Controller {

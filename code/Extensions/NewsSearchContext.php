@@ -9,8 +9,9 @@
 
 class NewsSearchContext extends SearchContext {
 
+	private $newsAdmin;
 
-	public function __construct($modelClass, $fields = null, $filters = null) {
+	public function __construct($modelClass, $newsAdmin = null, $fields = null, $filters = null) {
 
 		$fields = new FieldList(
 			TextField::create('Title'),
@@ -18,7 +19,7 @@ class NewsSearchContext extends SearchContext {
 			HeaderField::create('DatesHeader', 'Dates')->setHeadingLevel(3),
 			DateField::create('StartDate')->setTitle(null)->setAttribute('placeholder', 'Start Date'),
 			DateField::create('EndDate')->setTitle(null)->setAttribute('placeholder', 'End Date'),
-			CheckboxSetField::create('Types')->setSource(NewsSearchContext::GetNewsTypes())
+			CheckboxSetField::create('Types')->setSource(NewsSearchContext::GetNewsTypes($newsAdmin))
 				->setValue(isset($_REQUEST['q']) && isset($_REQUEST['q']['Types']) ? $_REQUEST['q']['Types'] : null),
 			TextField::create('Tags'),
 			TextField::create('Summary'),
@@ -41,7 +42,9 @@ class NewsSearchContext extends SearchContext {
 			'EndDate'			=> new LessThanOrEqualFilter('DateTime')
 		);
 
-
+		if($newsAdmin){
+			$this->newsAdmin = $newsAdmin;
+		}
 		parent::__construct($modelClass, $fields, $filters);
 	}
 
@@ -71,10 +74,15 @@ class NewsSearchContext extends SearchContext {
 
 
 
-	public static function GetNewsTypes(){
+	public static function GetNewsTypes(NewsAdmin $newsAdmin = null){
+		if($newsAdmin){
+			return $newsAdmin->getSearchableClasses();
+		}
+
 		$arrRet = array();
-		foreach(ClassInfo::subclassesFor('NewsPost') as $strClassName)
+		foreach(ClassInfo::subclassesFor('NewsPost') as $strClassName){
 			$arrRet[$strClassName] = $strClassName;
+		}
 
 		return $arrRet;
 	}
