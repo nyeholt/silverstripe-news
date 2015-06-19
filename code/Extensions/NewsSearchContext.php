@@ -16,6 +16,9 @@ class NewsSearchContext extends SearchContext {
 		$fields = new FieldList(
 			TextField::create('Title'),
 			TextField::create('URLSegment'),
+			DropdownField::create('ParentID', 'Parent page')->setSource(
+				NewsIndex::get()->map('ID', 'Title')->toArray()
+			)->setEmptyString('Select'),
 			HeaderField::create('DatesHeader', 'Dates')->setHeadingLevel(3),
 			DateField::create('StartDate')->setTitle(null)->setAttribute('placeholder', 'Start Date'),
 			DateField::create('EndDate')->setTitle(null)->setAttribute('placeholder', 'End Date'),
@@ -34,6 +37,7 @@ class NewsSearchContext extends SearchContext {
 		$filters = array(
 			'Title'				=> new PartialMatchFilter('Title'),
 			'URLSegment'		=> new PartialMatchFilter('URLSegment'),
+			'ParentID'			=> new ExactMatchFilter('ParentID'),
 			'Tags'				=> new PartialMatchFilter('Tags'),
 			'Summary'			=> new PartialMatchFilter('Summary'),
 			'Content'			=> new PartialMatchFilter('Content'),

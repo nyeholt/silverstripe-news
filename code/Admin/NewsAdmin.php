@@ -71,11 +71,14 @@ class NewsAdmin extends ModelAdmin {
 	public function getEditForm($id = null, $fields = null){
 		$form = parent::getEditForm($id, $fields);
 
-		if(!ClassInfo::exists('GridFieldBetterButtonsItemRequest') && $this->IsEditingNews()){
-			$field = $form->Fields()->dataFieldByName($this->modelClass);
-			if($field){
-				$field->getConfig()->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
+		$field = $form->Fields()->dataFieldByName($this->modelClass);
+		if($field){
+			$config = $field->getConfig();
+			if(!ClassInfo::exists('GridFieldBetterButtonsItemRequest') && $this->IsEditingNews()){
+				$config->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
 			}
+
+			$config->removeComponentsByType('GridFieldDeleteAction');
 		}
 
 		return $form;
