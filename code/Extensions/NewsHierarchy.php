@@ -29,5 +29,20 @@ class NewsHierarchy extends Hierarchy {
 				$rootCall, $nodeCountThreshold, $nodeCountCallback);
 		}
 	}
+	
+	public function loadDescendantIDListInto(&$idList) {
+		if($children = $this->AllChildren()) {
+			foreach($children as $child) {
+				if(in_array($child->ID, $idList)) {
+					continue;
+				}
+				$idList[] = $child->ID;
+				$ext = $child->getExtensionInstance('NewsHierarchy');
+				$ext->setOwner($child);
+				$ext->loadDescendantIDListInto($idList);
+				$ext->clearOwner();
+			}
+		}
+	}
 
 } 
