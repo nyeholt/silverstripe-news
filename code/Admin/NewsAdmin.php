@@ -78,7 +78,14 @@ class NewsAdmin extends ModelAdmin {
 				$config->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
 			}
 
+			if(ClassInfo::exists('GridFieldSortableRows')){
+				$config->addComponent(new GridFieldSortableRows('Sort'));
+			}
+
 			$config->removeComponentsByType('GridFieldDeleteAction');
+			$config->removeComponentsByType('GridFieldPaginator');
+
+			$config->addComponent($pagination = new GridFieldPaginator(100));
 		}
 
 		return $form;
