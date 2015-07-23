@@ -78,7 +78,8 @@ class NewsAdmin extends ModelAdmin {
 				$config->getComponentByType('GridFieldDetailForm')->setItemRequestClass('NewsGridFieldDetailForm_ItemRequest');
 			}
 
-			if(ClassInfo::exists('GridFieldSortableRows')){
+			$singleton = singleton($this->modelClass);
+			if(is_a($singleton, 'NewsPost') && ClassInfo::exists('GridFieldSortableRows')){
 				$config->addComponent(new GridFieldSortableRows('Sort'));
 			}
 
