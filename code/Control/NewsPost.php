@@ -15,7 +15,7 @@ class NewsPost extends Page {
 		'DateTime'		=> 'SS_Datetime',
 		'Tags'			=> 'Varchar(500)',
 		'Author'		=> 'Varchar(100)',
-		'Summary'		=> 'HTMLVarchar(500)'
+		'Summary'		=> 'HTMLText'
 	);
 
 	private static $many_many = array(
