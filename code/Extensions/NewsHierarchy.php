@@ -15,7 +15,7 @@ class NewsHierarchy extends Hierarchy {
 									$nodeCountThreshold = null, $nodeCountCallback = null) {
 
 
-		if(is_a($this->owner, 'NewsIndex')){
+		if(get_class($this->owner) == 'NewsIndex'){
 			$strURL = $this->owner->getNewsItemsEditLink();
 			$output = "<ul$attributes>\n";
 			$output.= '<li class="readonly">
