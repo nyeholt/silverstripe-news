@@ -43,7 +43,8 @@ class NewsPageExtension extends DataExtension {
 			while($row = $results->nextRecord()){
 				$alRet->push(new ArrayData(array(
 					'Link'		=> $newsIndex->Link('archive/' . urlencode($row['Date'])),
-					'Archive'	=> $row['Date']
+					'Archive'	=> $row['Date'],
+					'List'		=> NewsPost::get()->where('DATE_FORMAT(`DateTime`, \'' . $strPattern . '\') = \'' . $row['Date'] . '\'')
 				)));
 			}
 
