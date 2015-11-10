@@ -43,7 +43,8 @@ class NewsIndex_Controller extends Page_Controller {
 
 	private static $allowed_actions = array(
 		'tag',
-		'archive'
+		'archive',
+		'rss'
 	);
 
 
@@ -123,6 +124,25 @@ class NewsIndex_Controller extends Page_Controller {
 	 */
 	function NewsItemsPerPage(){
 		return $this->ItemsPerPage ? : SiteConfig::current_site_config()->ItemsPerPage ? : 10;
+	}
+
+	/**
+	 * RSS feed
+	 */
+	public function rss(){
+
+		$list = NewsPost::get()->filter('ParentID', $this->ID);
+		$list = $list->Sort('DateTime DESC');
+
+		$this->extend('updateRSSItems', $list);
+
+		$feed = new RSSFeed(
+			$list,
+			$this->AbsoluteLink(),
+			$this->Title
+		);
+
+		return $feed->outputToBrowser();
 	}
 
 }
