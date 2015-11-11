@@ -48,8 +48,7 @@ class NewsArticle extends Page {
 			$this->OriginalPublishedDate = date('Y-m-d');
 		}
 
-		// $fields->addFieldToTab('Root.Content.Main', new TreeDropdownField('InternalPageLinkID', _t('NewsArticle.INTERNAL_PAGE', 'A page on this site for the news')), 'Content');
-		$fields->addFieldToTab('Root.Main', new TreeDropdownField('InternalFileID', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'), 'File'), 'Content');
+		$fields->addFieldToTab('Root.Main', UploadField::create('InternalFile', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'))->setFolderName('news'), 'Content');
 		$fields->addFieldToTab('Root.Main', $summary = new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
 		$summary->addExtraClass('stacked');
 
