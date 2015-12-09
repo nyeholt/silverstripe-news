@@ -9,7 +9,7 @@
 
 class NewsAdmin extends ModelAdmin {
 
-	private static $menu_icon = 'framework/admin/images/menu-icons/16x16/db.png';
+	private static $menu_icon = 'silverstripe-news/images/news-icon.png';
 
 	private static $url_segment = 'news';
 	private static $menu_title = 'News';
