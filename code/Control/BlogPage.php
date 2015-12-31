@@ -7,12 +7,10 @@
  * To change this template use File | Settings | File Templates.
  */
 
-class BlogPage extends NewsPost {
-
+class BlogPage extends NewsPost
+{
 }
 
-class BlogPage_Controller extends NewsPost_Controller {
-
-
-
+class BlogPage_Controller extends NewsPost_Controller
+{
 }
