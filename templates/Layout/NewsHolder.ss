@@ -4,8 +4,8 @@
 		<div class="content">
 			$Content
 			<!-- if there's some subsections, lets use those and list their children -->
-			<% if SubSections(false) %>
-				<% loop SubSections(false) %>
+			<% if SubSections(0) %>
+				<% loop SubSections(0) %>
 				<h2><a href="$Link">$Title.XML</a></h2>
 				<% include NewsListItem %>
 				<% end_loop %>
@@ -25,7 +25,7 @@
 					  </div>
 					  <% end_if %>
 					  <span>
-						<% if Articles.PaginationSummary %><% loop Articles.PaginationSummary %>
+						<% if $Articles.PaginationSummary %><% loop $Articles.PaginationSummary %>
 						  <% if CurrentBool %>
 							$PageNum
 						  <% else %>

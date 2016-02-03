@@ -96,7 +96,7 @@ class NewsHolder extends Page {
 		$filter = null;
 		if ($this->PrimaryNewsSection) {
 			// get all where the holder = me
-			$filter = singleton('NewsUtils')->dbQuote(array('NewsSectionID = ' => (int) $this->ID));
+			$filter = array('NewsSectionID' => $this->ID);
 		} else {
 			$subholders = $this->SubSections();
 			if ($subholders) {
@@ -107,14 +107,13 @@ class NewsHolder extends Page {
 
 			if ($subholders && $subholders->Count()) {
 				$ids = $subholders->column('ID');
-				$filter = singleton('NewsUtils')->dbQuote(array('ParentID IN' => $ids));
+				$filter = array('ParentID' => $ids);
 			} else {
-				$filter = singleton('NewsUtils')->dbQuote(array('ParentID = ' => (int) $this->ID));
+				$filter = array('ParentID' => (int) $this->ID);
 			}
 		}
 
-		$articles = DataObject::get('NewsArticle', $filter, '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number);
-
+		$articles = NewsArticle::get()->filter($filter)->sort(array('"OriginalPublishedDate" DESC', '"ID" DESC'))->limit($number, $start);
 		$entries = PaginatedList::create($articles);
 		$entries->setPaginationFromQuery($articles->dataQuery()->query());
 
@@ -129,8 +128,8 @@ class NewsHolder extends Page {
 	public function SubSections($allChildren=true) {
 		$subs = null;
 
-		$childHolders = DataObject::get('NewsHolder', singleton('NewsUtils')->dbQuote(array('ParentID =' => $this->ID)));
-		if ($childHolders && $childHolders->Count()) {
+		$childHolders = NewsHolder::get()->filter('ParentID', $this->ID);
+		if ($childHolders && $childHolders->count()) {
 			$subs = new ArrayList();
 			foreach ($childHolders as $holder) {
 				$subs->push($holder);
