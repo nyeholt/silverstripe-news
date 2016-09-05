@@ -13,6 +13,10 @@ class NewsHolder extends Page {
 													// automatically file into subfolders
 		'FilingMode'			=> 'Varchar',		// Date, Month, Year
 		'FileBy'				=> "Varchar",
+        
+        'OrderBy'				=> "Varchar",
+        'OrderDir'				=> "Varchar",
+        
 		'PrimaryNewsSection'	=> 'Boolean',		// whether this holder should be regarded as a primary
 													// news section (some are secondary and merely categorisation tools)
 	);
@@ -23,7 +27,7 @@ class NewsHolder extends Page {
 	);
 	
 	private static $icon = 'news/images/newsholder';
-	
+
 	private static $allowed_children = array(
 		'NewsArticle',
 		'NewsHolder'
@@ -62,6 +66,12 @@ class NewsHolder extends Page {
 		$fields->addFieldToTab('Root.Main', new DropdownField('FilingMode', _t('NewsHolder.FILING_MODE', 'File into'), $modes), 'Content');
 		$fields->addFieldToTab('Root.Main', new DropdownField('FileBy', _t('NewsHolder.FILE_BY', 'File by'), array('Published' => 'Published', 'Created' => 'Created')), 'Content');
 		$fields->addFieldToTab('Root.Main', new CheckboxField('PrimaryNewsSection', _t('NewsHolder.PRIMARY_SECTION', 'Is this a primary news section?'), true), 'Content');
+
+		$fields->addFieldToTab('Root.Main', new DropdownField('OrderBy', _t('NewsHolder.ORDER_BY', 'Order by'), array('OriginalPublishedDate' => 'Published', 'Created' => 'Created')), 'Content');
+		$fields->addFieldToTab('Root.Main', new DropdownField('OrderDir', _t('NewsHolder.ORDER_DIR', 'Order direction'), array('DESC' => 'Descending date', 'ASC' => 'Ascending date')), 'Content');
+		
+		$this->extend('updateNewsHolderCMSFields', $fields);
+
 		return $fields;
 	}
 	
@@ -74,7 +84,7 @@ class NewsHolder extends Page {
 			$this->AutoFiling = false;
 		}
 	}
-
+	
 	/**
 	 * Returns a list of articles within this news holder.
 	 *
@@ -113,7 +123,13 @@ class NewsHolder extends Page {
 			}
 		}
 
-		$articles = NewsArticle::get()->filter($filter)->sort(array('"OriginalPublishedDate" DESC', '"ID" DESC'))->limit($number, $start);
+		$orderBy = strlen($this->OrderBy) ? $this->OrderBy : 'OriginalPublishedDate';
+		$dir = strlen($this->OrderDir) ? $this->OrderDir : 'DESC';
+		if (!in_array($dir, array('ASC', 'DESC'))) {
+			$dir = 'DESC';
+		}
+
+		$articles = NewsArticle::get()->filter($filter)->sort(array($orderBy => $dir))->limit($number, $start);
 		$entries = PaginatedList::create($articles);
 		$entries->setPaginationFromQuery($articles->dataQuery()->query());
 
