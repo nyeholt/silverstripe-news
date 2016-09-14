@@ -192,7 +192,7 @@ class NewsArticle extends Page {
     	$urls 	= array($this->Link());
 		
 		// add all parent (holders)
-		while($parent && $parent->ParentID > -1){
+		while($parent && $parent->ParentID > -1 && $parent instanceof NewsHolder) {
     		$urls[] = $parent->Link();
     		$parent = $parent->Parent();
    		}
