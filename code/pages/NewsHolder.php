@@ -200,7 +200,7 @@ class NewsHolder extends Page {
 		}
 
 		$year = date('Y', strtotime($date));
-		$month = date('M', strtotime($date));
+		$month = ucfirst(strftime('%b', strtotime($date)));
 		$day = date('d', strtotime($date));
 
 		$yearFolder = $this->dateFolder($year);
