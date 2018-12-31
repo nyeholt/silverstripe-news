@@ -1,8 +1,14 @@
 <?php
 
-namespace Symbiote\News\Pages;
+namespace Symbiote\News;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Convert;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\PaginatedList;
 
 /**
  * A top level page that contains news articles
@@ -11,6 +17,8 @@ use SilverStripe\CMS\Model\SiteTree;
  * @license BSD License http://silverstripe.org/bsd-license/
  */
 class NewsHolder extends SiteTree {
+
+    private static $table_name = 'NewsHolder';
 
 	private static $db = array(
 		'AutoFiling'			=> 'Boolean',		// whether articles created in this holder
@@ -30,11 +38,11 @@ class NewsHolder extends SiteTree {
 		'PrimaryNewsSection'	=> true
 	);
 
-	private static $icon = 'news/images/newsholder';
+	private static $icon = 'news/images/newsholder-file.gif';
 
 	private static $allowed_children = array(
-		'NewsArticle',
-		'NewsHolder'
+		NewsArticle::class,
+		NewsHolder::class
 	);
 	/**
 	 * Should this news article be automatically filed into a year/month/date
@@ -209,7 +217,7 @@ class NewsHolder extends SiteTree {
 
 		$yearFolder = $this->dateFolder($year);
 		if (!$yearFolder) {
-			throw new Exception("Failed retrieving folder");
+			throw new \Exception("Failed retrieving folder");
 		}
 
 		if ($this->FilingMode == 'year') {
@@ -218,7 +226,7 @@ class NewsHolder extends SiteTree {
 
 		$monthFolder = $yearFolder->dateFolder($month);
 		if (!$monthFolder) {
-			throw new Exception("Failed retrieving folder");
+			throw new \Exception("Failed retrieving folder");
 		}
 
 		if ($this->FilingMode == 'month') {
@@ -227,7 +235,7 @@ class NewsHolder extends SiteTree {
 
 		$dayFolder = $monthFolder->dateFolder($day);
 		if (!$dayFolder) {
-			throw new Exception("Failed retrieving folder");
+			throw new \Exception("Failed retrieving folder");
 		}
 
 		return $dayFolder;
@@ -242,7 +250,7 @@ class NewsHolder extends SiteTree {
 	 */
 	public function dateFolder($name, $publish=false) {
 		// see if we have a named child, otherwise create one
-		$child = DataObject::get_one('NewsHolder', 'ParentID = ' . $this->ID . ' AND Title = \'' . Convert::raw2sql($name) . '\'');
+		$child = DataObject::get_one(NewsHolder::class, 'ParentID = ' . $this->ID . ' AND Title = \'' . Convert::raw2sql($name) . '\'');
 
 		if (!$child || !$child->ID) {
 			$class = get_class($this);
@@ -286,7 +294,7 @@ class NewsHolder extends SiteTree {
 			$start = 0;
 		}
 
-		$articles = NewsArticle::get('NewsArticle', '', '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number)
+		$articles = NewsArticle::get(NewsArticle::class, '', '"OriginalPublishedDate" DESC, "ID" DESC', '', $start . ',' . $number)
 			->filter(array('ID' => $this->getDescendantIDList()));
 		$entries = PaginatedList::create($articles);
 		$entries->setPaginationFromQuery($articles->dataQuery()->query());

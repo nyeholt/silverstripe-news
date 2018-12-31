@@ -1,11 +1,11 @@
 <?php
 
-namespace Symbiote\News\Pages;
+namespace Symbiote\News;
 
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\RSS\RSSFeed;
 
-class NewsHolder_Controller extends ContentController {
+class NewsHolderController extends \PageController {
 
 	private static $allowed_actions = array('Rss');
 

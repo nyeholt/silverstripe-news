@@ -1,8 +1,15 @@
 <?php
 
-namespace Symbiote\News\Pages;
+namespace Symbiote\News;
 
+use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Assets\File;
+use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Forms\DateField;
+use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
+use SilverStripe\Forms\TextField;
+use SilverStripe\ORM\DataObject;
 
 /**
  * A news article in the system
@@ -12,7 +19,8 @@ use SilverStripe\CMS\Model\SiteTree;
  */
 class NewsArticle extends SiteTree {
 
-	private static $icon = 'news/images/newspaper';
+    private static $table_name = 'NewsArticle';
+	private static $icon = 'news/images/newspaper-file.gif';
 	private static $db = array(
 		'Summary' => 'HTMLText',
 		'Author' => 'Varchar(128)',
@@ -27,9 +35,9 @@ class NewsArticle extends SiteTree {
 	 * @var array
 	 */
 	private static $has_one = array(
-		'InternalFile' => 'File',
-		'NewsSection' => 'NewsHolder',
-		'Thumbnail' => 'Image',
+		'InternalFile' => File::class,
+		'NewsSection' => NewsHolder::class,
+		'Thumbnail' => Image::class,
 	);
 
 	public function getCMSFields() {
@@ -38,13 +46,11 @@ class NewsArticle extends SiteTree {
 		$fields->addFieldToTab('Root.Main', new TextField('Author', _t('NewsArticle.AUTHOR', 'Author')), 'Content');
 		$fields->addFieldToTab('Root.Main', $dp = new DateField('OriginalPublishedDate', _t('NewsArticle.PUBLISHED_DATE', 'When was this article first published?')), 'Content');
 
-		$dp->setConfig('showcalendar', true);
-
 		$fields->addFieldToTab('Root.Main', new TextField('ExternalURL', _t('NewsArticle.EXTERNAL_URL', 'External URL to article (will automatically redirect to this URL if no article content set)')), 'Content');
 		$fields->addFieldToTab('Root.Main', new TextField('Source', _t('NewsArticle.SOURCE', 'News Source')), 'Content');
 
 		$fields->addFieldToTab('Root.Main', $if = new UploadField('Thumbnail', _t('NewsArticle.THUMB', 'Thumbnail')), 'Content');
-		$if->setConfig('allowedMaxFileNumber', 1)->setFolderName('news-articles/thumbnails');
+		$if->setAllowedMaxFileNumber(1)->setFolderName('news-articles/thumbnails');
 		$if->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
 
 		if (!$this->OriginalPublishedDate) {
@@ -53,7 +59,7 @@ class NewsArticle extends SiteTree {
 		}
 
 		$fields->addFieldToTab('Root.Main', UploadField::create('InternalFile', _t('NewsArticle.INTERNAL_FILE', 'Select a file containing this news article, if any'))->setFolderName('news'), 'Content');
-		$fields->addFieldToTab('Root.Main', $summary = new HtmlEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
+		$fields->addFieldToTab('Root.Main', $summary = new HTMLEditorField('Summary', _t('NewsArticle.SUMMARY', 'Article Summary (displayed in listings)')), 'Content');
 		$summary->addExtraClass('stacked');
 
 		$this->extend('updateArticleCMSFields', $fields);
@@ -115,7 +121,7 @@ class NewsArticle extends SiteTree {
 	 * writing the objects
 	 */
 	protected function publishSection() {
-		$parent = DataObject::get_by_id('NewsHolder', $this->ParentID);
+		$parent = DataObject::get_by_id(NewsHolder::class, $this->ParentID);
 		while ($parent && $parent instanceof NewsHolder) {
 			if (!$parent->isPublished()) {
 				$parent->doPublish();
