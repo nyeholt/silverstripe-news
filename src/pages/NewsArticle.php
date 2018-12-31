@@ -207,6 +207,3 @@ class NewsArticle extends SiteTree {
   	}
 
 }
-
-class NewsArticle_Controller extends Page_Controller {
-}

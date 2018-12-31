@@ -21,6 +21,7 @@
 		"branch-alias": {
 			"dev-master": "2.x-dev"
 		},
+		"installer-name": "news",
 		"expose": [
         "images"
     ]
