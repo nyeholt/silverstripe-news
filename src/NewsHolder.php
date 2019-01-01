@@ -38,7 +38,7 @@ class NewsHolder extends SiteTree {
 		'PrimaryNewsSection'	=> true
 	);
 
-	private static $icon = 'news/images/newsholder-file.gif';
+	private static $icon = 'resources/vendor/silverstripe-australia/silverstripe-news/images/newsholder-file.gif';
 
 	private static $allowed_children = array(
 		NewsArticle::class,

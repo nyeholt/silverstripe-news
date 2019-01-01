@@ -20,7 +20,7 @@ use SilverStripe\ORM\DataObject;
 class NewsArticle extends SiteTree {
 
     private static $table_name = 'NewsArticle';
-	private static $icon = 'news/images/newspaper-file.gif';
+	private static $icon = 'resources/vendor/silverstripe-australia/silverstripe-news/images/newspaper-file.gif';
 	private static $db = array(
 		'Summary' => 'HTMLText',
 		'Author' => 'Varchar(128)',
