@@ -1,22 +1,31 @@
 {
 	"name": "silverstripe-australia/silverstripe-news",
 	"description": "News module for silverstripe",
-	"type": "silverstripe-module",
+	"type": "silverstripe-vendormodule",
 	"keywords": ["silverstripe", "news"],
 	"authors": [
 		{
-			"name": "Marcus Nyeholt"			
+			"name": "Marcus Nyeholt"
 		}
 	],
 	"require": {
-		"silverstripe/framework": "^3.1.0",
-		"silverstripe/cms": "^3.1.0"		
+		"silverstripe/framework": "^4.1.0",
+		"silverstripe/cms": "^4.1.0"
 	},
+  "autoload": {
+    "psr-4": {
+        "Symbiote\\News\\": "src/"
+    }
+    },
 	"extra": {
 		"branch-alias": {
-			"dev-master": "1.2.x-dev"
-		}, 
-		"installer-name": "news"
+			"dev-master": "2.x-dev"
+		},
+		"installer-name": "silverstripe-news",
+		"expose": [
+        "images"
+    ]
 	},
-	"minimum-stability": "dev"
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }
